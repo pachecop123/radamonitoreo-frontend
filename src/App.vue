@@ -1,31 +1,27 @@
 <template>
   <div id="app">
-    <v-app>
-      <v-main>
-        <v-container>
-          <Navbar v-if="store.isAuthenticated" />
-          <router-view />
-        </v-container>
-      </v-main>
-    </v-app>
+    <DashboardLayout v-if="store.isAuthenticated" />
+    <router-view v-else />
   </div>
 </template>
 
 <script>
 import { store } from './store';
-import Navbar from './components/Navbar.vue';
+import DashboardLayout from './components/DashboardLayout.vue';
 
 export default {
   components: {
-    Navbar
+    DashboardLayout,
   },
   setup() {
     return { store };
-  }
+  },
 };
 </script>
 
 <style>
-/* Estilos generales para la aplicación */
-@import '~bootstrap/dist/css/bootstrap.css';
+/* Estilos globales opcionales */
+body {
+  font-family: Arial, sans-serif;
+}
 </style>
