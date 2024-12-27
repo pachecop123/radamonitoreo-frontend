@@ -1,17 +1,26 @@
 <template>
   <div id="app">
-    <Navbar />
-    <router-view></router-view>
+    <v-app>
+      <v-main>
+        <v-container>
+          <Navbar v-if="store.isAuthenticated" />
+          <router-view />
+        </v-container>
+      </v-main>
+    </v-app>
   </div>
 </template>
 
 <script>
+import { store } from './store';
 import Navbar from './components/Navbar.vue';
 
 export default {
-  name: 'App',
   components: {
     Navbar
+  },
+  setup() {
+    return { store };
   }
 };
 </script>
