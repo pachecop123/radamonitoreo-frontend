@@ -9,13 +9,13 @@
     <div class="d-flex justify-content-between mb-3">
       <!-- Cards on the left -->
       <div class="d-flex justify-content-start">
-        <div class="card text-center me-3" style="width: 200px; background-color: #28a745; color: white;">
+        <div class="card text-center me-3 bg-success text-white" style="width: 200px;">
           <div class="card-body">
             <h5 class="card-title">Numero de Productos</h5>
             <p class="card-text">{{ selectedProduct ? selectedProduct.stock : totalProducts }}</p>
           </div>
         </div>
-        <div class="card text-center" style="width: 200px; background-color: #dc3545; color: white;">
+        <div class="card text-center bg-danger text-white" style="width: 200px;">
           <div class="card-body">
             <h5 class="card-title">Valor Inv. Compras</h5>
             <p class="card-text">{{ selectedProduct ? selectedProduct.purchasePrice * selectedProduct.stock : totalInventoryValue }}</p>
@@ -25,15 +25,15 @@
 
       <!-- Product image on the right -->
       <div class="card text-center" style="width: 150px; height: 150px;">
-  <div class="card-body d-flex flex-column align-items-center justify-content-center">
-    <div
-    
-    >
-      <img
-        v-if="selectedProduct"
-        :src="selectedProduct.image"
-        alt="Imagen del producto"
-        style="max-width: 100%; max-height: 100%; object-fit: contain;"
+        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+          <div>
+            <img
+              v-if="selectedProduct"
+              :src="selectedProduct.image"
+              alt="Imagen del producto"
+              class="img-fluid"
+              style="max-height: 100%; object-fit: contain;"
+            />
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@
 
     <!-- Table -->
     <div class="table-responsive">
-      <table class="table table-bordered">
+      <table class="table table-bordered table-hover">
         <thead class="table-primary">
           <tr>
             <th>Nombre del Producto</th>
@@ -70,7 +70,7 @@
             v-for="product in filteredProducts"
             :key="product.id"
             @click="selectProduct(product)"
-            style="cursor: pointer;"
+            class="cursor-pointer"
           >
             <td>{{ product.name }}</td>
             <td>{{ product.purchasePrice }}</td>
@@ -160,5 +160,8 @@ export default {
 .table {
   text-align: center;
   font-size: 14px;
+}
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
