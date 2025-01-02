@@ -6,6 +6,12 @@ import Proveedores from "../views/Proveedores.vue";
 import Ventas from "../views/Ventas.vue";
 import Compras from "../views/Compras.vue";
 import Inventarios from "../views/Inventarios.vue";
+import Cotizaciones from "../views/Cotizaciones.vue";
+import CuentasPorCobrar from "../views/CuentasPorCobrar.vue";
+import CuentasPorPagar from "../views/CuentasPorPagar.vue";
+import ConsultaIngresos from "../views/ConsultaIngresos.vue";
+import Settings from "../views/Settings.vue";
+import Gastos from "../views/Gastos.vue";
 import About from "../views/About.vue";
 import Login from "../components/Login.vue";
 import Register from "../components/Register.vue";
@@ -26,6 +32,15 @@ const routes = [
       { path: "/compras", name: "Compras", component: Compras },
       { path: "/inventarios", name: "Inventarios", component: Inventarios },
       { path: "/about", name: "About", component: About },
+      { path: '/cotizaciones', component: Cotizaciones },
+      { path: '/gastos', component: Gastos },
+      { path: '/cuentas-por-cobrar', component: CuentasPorCobrar },
+      { path: '/cuentas-por-pagar', component: CuentasPorPagar },
+      { path: '/consulta-ingresos', component: ConsultaIngresos },
+      { path: '/settings', component: Settings },
+      // Define una ruta por defecto o 404
+      { path: '*', redirect: '/' }
+      
       // Agrega las rutas para los demás módulos
     ],
   },
