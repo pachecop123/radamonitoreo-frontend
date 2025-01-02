@@ -139,17 +139,17 @@
           </div>
         </div>
         <!-- Botones de Acción -->
-        <div class="d-flex justify-content-between mt-4">
-          <button class="btn btn-success" @click="handleSubmit">
-            <i class="fas fa-save"></i> Guardar
-          </button>
-          <button class="btn btn-secondary" @click="limpiarFormulario">
-            <i class="fas fa-broom"></i> Limpiar
-          </button>
-          <button class="btn btn-danger" @click="eliminarVenta">
-            <i class="fas fa-trash"></i> Eliminar
-          </button>
-        </div>
+       <div>
+            <button class="btn btn-success me-2" @click="registrar">
+              <i class="fas fa-save"></i> Registrar
+            </button>
+            <button class="btn btn-secondary me-2" @click="limpiar">
+              <i class="fas fa-broom"></i> Limpiar
+            </button>
+            <button class="btn btn-danger" @click="cancelar">
+              <i class="fas fa-trash"></i> Cancelar
+            </button>
+          </div>
       </div>
     </div>
   </div>
