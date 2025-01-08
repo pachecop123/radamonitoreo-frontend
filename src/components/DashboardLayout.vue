@@ -5,7 +5,7 @@
       <h3 class="text-center">GMR</h3>
       <ul class="nav flex-column">
         <li class="nav-item">
-          <router-link to="/dashboard" class="nav-link text-white">
+          <router-link to="/home" class="nav-link text-white">
             <i class="bi bi-house-door"></i> Inicio
           </router-link>
         </li>
@@ -76,15 +76,30 @@
         </button>
         <span class="navbar-brand ms-3">Gps Monitoreo RADA</span>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="bi bi-bell"></i>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
+          <li class="nav-item dropdown">
+            <a 
+              href="#" 
+              class="nav-link dropdown-toggle" 
+              id="userMenu" 
+              role="button" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false"
+            >
               <i class="bi bi-person-circle"></i>
             </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+              <li>
+                <router-link to="/settings" class="dropdown-item">
+                  <i class="bi bi-gear"></i> Configuración
+                </router-link>
+              </li>
+              <li><hr> class="dropdown-divider"></li>
+              <li>
+                <button class="dropdown-item" @click="logout">
+                  <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                </button>
+              </li>
+            </ul>
           </li>
         </ul>
       </header>
@@ -98,17 +113,34 @@
 </template>
 
 <script>
+import { useRouter } from 'vue-router';
+
 export default {
-  methods: {
-    toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('d-none');
-    },
+  name: "DashboardLayout",
+  setup() {
+    const router = useRouter();
+
+    const toggleSidebar = () => {
+      const sidebar = document.getElementById("sidebar");
+      sidebar.classList.toggle("d-none");
+    };
+
+    const logout = () => {
+      // Elimina el token de autenticación
+      localStorage.removeItem("access_token");
+      // Redirige al usuario a la página de inicio de sesión
+      router.push({ name: "Login" });
+    };
+
+    return {
+      toggleSidebar,
+      logout,
+    };
   },
 };
 </script>
 
-<style>
+<style scoped>
 /* Dashboard layout styles */
 #dashboard-layout {
   height: 100vh;

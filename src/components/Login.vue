@@ -34,8 +34,8 @@ import { useApi } from '@/composables/use-api';
 export default {
     data() {
         return {
-            email: '',
-            password: '',
+            email: 'miguel@gmail.com',
+            password: '123456',
             errorMessage: '',
         };
     },

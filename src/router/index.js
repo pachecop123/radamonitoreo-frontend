@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Dashboard from "../components/DashboardLayout.vue";
+import Home from "../components/Home.vue";
 import Productos from "../views/Productos.vue";
 import Clientes from "../views/Clientes.vue";
 import Proveedores from "../views/Proveedores.vue";
@@ -12,55 +12,42 @@ import CuentasPorPagar from "../views/CuentasPorPagar.vue";
 import ConsultaIngresos from "../views/ConsultaIngresos.vue";
 import Settings from "../views/Settings.vue";
 import Gastos from "../views/Gastos.vue";
-import About from "../views/About.vue";
 import Login from "../components/Login.vue";
 import Register from "../components/Register.vue";
-import { store } from "../store";
-import DashboardLayout from "../components/DashboardLayout.vue";
-
-// Importa los demás componentes según los necesites
 
 const routes = [
-  {
-    path: "/dashboard",
-    component: DashboardLayout,
-    children: [
-      { path: "/productos", name: "Productos", component: Productos },
-      { path: "/clientes", name: "Clientes", component: Clientes },
-      { path: "/proveedores", name: "Proveedores", component: Proveedores },
-      { path: "/ventas", name: "Ventas", component: Ventas },
-      { path: "/compras", name: "Compras", component: Compras },
-      { path: "/inventarios", name: "Inventarios", component: Inventarios },
-      { path: "/about", name: "About", component: About },
-      { path: '/cotizaciones', component: Cotizaciones },
-      { path: '/gastos', component: Gastos },
-      { path: '/cuentas-por-cobrar', component: CuentasPorCobrar },
-      { path: '/cuentas-por-pagar', component: CuentasPorPagar },
-      { path: '/consulta-ingresos', component: ConsultaIngresos },
-      { path: '/settings', component: Settings },
-      // Define una ruta por defecto o 404
-      { path: '*', redirect: '/' }
-      
-      // Agrega las rutas para los demás módulos
-    ],
-  },
   { path: "/", name: "Login", component: Login },
   { path: "/register", name: "Register", component: Register },
+
+  {path: "/home", name: "Home", component: Home, meta: { requiresAuth: true } },
+
+  // Rutas protegidas
+  { path: "/productos", name: "Productos", component: Productos, meta: { requiresAuth: true } },
+  { path: "/clientes", name: "Clientes", component: Clientes, meta: { requiresAuth: true } },
+  { path: "/proveedores", name: "Proveedores", component: Proveedores, meta: { requiresAuth: true } },
+  { path: "/ventas", name: "Ventas", component: Ventas, meta: { requiresAuth: true } },
+  { path: "/compras", name: "Compras", component: Compras, meta: { requiresAuth: true } },
+  { path: "/inventarios", name: "Inventarios", component: Inventarios, meta: { requiresAuth: true } },
+  { path: "/cotizaciones", name: "Cotizaciones", component: Cotizaciones, meta: { requiresAuth: true } },
+  { path: "/gastos", name: "Gastos", component: Gastos, meta: { requiresAuth: true } },
+  { path: "/cuentas-por-cobrar", name: "CuentasPorCobrar", component: CuentasPorCobrar, meta: { requiresAuth: true } },
+  { path: "/cuentas-por-pagar", name: "CuentasPorPagar", component: CuentasPorPagar, meta: { requiresAuth: true } },
+  { path: "/consulta-ingresos", name: "ConsultaIngresos", component: ConsultaIngresos, meta: { requiresAuth: true } },
+  { path: "/settings", name: "Settings", component: Settings, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(),
   routes,
 });
 
+// Middleware para proteger rutas
 router.beforeEach((to, from, next) => {
-  if (
-    to.matched.some((record) => record.meta.requiresAuth) &&
-    !store.isAuthenticated
-  ) {
-    next({ name: "Login" });
+  const isAuthenticated = localStorage.getItem("access_token") !== null; // Verifica si el usuario está autenticado
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: "Login" }); // Redirige al login si no está autenticado
   } else {
-    next();
+    next(); // Permite el acceso
   }
 });
 

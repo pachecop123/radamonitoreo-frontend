@@ -1,27 +1,25 @@
 <template>
   <div id="app">
-    <DashboardLayout v-if="store.isAuthenticated" />
-    <router-view v-else />
+    <!-- Aplica automáticamente el DashboardLayout si la ruta está protegida -->
+    <component :is="layout">
+      <router-view />
+    </component>
   </div>
 </template>
 
 <script>
-import { store } from './store';
-import DashboardLayout from './components/DashboardLayout.vue';
+import DashboardLayout from "./components/DashboardLayout.vue";
 
 export default {
-  components: {
-    DashboardLayout,
-  },
-  setup() {
-    return { store };
+  computed: {
+    layout() {
+      // Aplica el DashboardLayout a rutas protegidas
+      return this.$route.meta.requiresAuth ? DashboardLayout : "div";
+    },
   },
 };
 </script>
 
 <style>
-/* Estilos globales opcionales */
-body {
-  font-family: Arial, sans-serif;
-}
+/* Tu estilo aquí */
 </style>
