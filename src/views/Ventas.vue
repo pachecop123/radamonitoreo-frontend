@@ -139,17 +139,19 @@
           </div>
         </div>
         <!-- Botones de Acción -->
-       <div>
+        <div class="row mt-4">
+          <div class="col-md-12 text-end">
             <button class="btn btn-success me-2" @click="registrar">
               <i class="fas fa-save"></i> Registrar
             </button>
-            <button class="btn btn-secondary me-2" @click="limpiar">
+            <button class="btn btn-secondary me-2" @click="limpiarFormulario">
               <i class="fas fa-broom"></i> Limpiar
             </button>
             <button class="btn btn-danger" @click="cancelar">
               <i class="fas fa-trash"></i> Cancelar
             </button>
           </div>
+        </div>
       </div>
     </div>
   </div>
