@@ -6,7 +6,7 @@
       </div>
       <div class="card-body">
         <button class="btn btn-success mb-3" @click="openModal">
-          Crear Nuevo Gasto
+          Crear Gasto
         </button>
 
         <!-- Tabla de Gastos -->
@@ -48,7 +48,7 @@
 
     <!-- Modal para crear/editar gastos -->
     <div class="modal fade" id="gastoModal" tabindex="-1" aria-labelledby="gastoModalLabel" aria-hidden="true" ref="gastoModal">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="gastoModalLabel">{{ isEditing ? 'Editar Gasto' : 'Crear Gasto' }}</h5>
