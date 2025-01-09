@@ -10,35 +10,37 @@
           Crear Nuevo Cliente
         </button>
         <input type="text" v-model="searchQuery" class="form-control mb-4 shadow-sm" placeholder="Buscar cliente..." />
-      </div>
-      <div class="mt-4">
-        <div class="table-responsive">
-          <table class="table table-bordered table-hover">
-            <thead class="bg-light">
-              <tr>
-                <th>#</th>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Dirección</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(cliente, index) in filteredClientes" :key="cliente.id">
-                <td>{{ index + 1 }}</td>
-                <td>{{ cliente.nombre }}</td>
-                <td>{{ cliente.correo }}</td>
-                <td>{{ cliente.telefono }}</td>
-                <td>{{ cliente.direccion }}</td>
-                <td>
-                  <button class="btn btn-warning btn-sm" @click="editCliente(cliente)">Editar</button>
-                  <button class="btn btn-danger btn-sm" @click="deleteCliente(cliente.id)">Eliminar</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+
+        <div class="mt-4">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="bg-light">
+                <tr>
+                  <th>#</th>
+                  <th>Nombre</th>
+                  <th>Correo</th>
+                  <th>Teléfono</th>
+                  <th>Dirección</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(cliente, index) in filteredClientes" :key="cliente.id">
+                  <td>{{ index + 1 }}</td>
+                  <td>{{ cliente.nombre }}</td>
+                  <td>{{ cliente.correo }}</td>
+                  <td>{{ cliente.telefono }}</td>
+                  <td>{{ cliente.direccion }}</td>
+                  <td>
+                    <button class="btn btn-warning btn-sm" @click="editCliente(cliente)">Editar</button>
+                    <button class="btn btn-danger btn-sm" @click="deleteCliente(cliente.id)">Eliminar</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+
       </div>
     </div>
 
@@ -195,12 +197,16 @@ export default {
 
 <style scoped>
 .custom-container {
-  max-width: 1400px; /* Ajusta el tamaño máximo según tus necesidades */
-  margin: 0 auto; /* Centra el contenedor horizontalmente */
+  max-width: 1400px;
+  /* Ajusta el tamaño máximo según tus necesidades */
+  margin: 0 auto;
+  /* Centra el contenedor horizontalmente */
 }
+
 .card-header {
   font-size: 1.5rem;
 }
+
 button {
   min-width: 80px;
 }
