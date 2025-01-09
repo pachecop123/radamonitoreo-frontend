@@ -77,23 +77,19 @@
         <span class="navbar-brand ms-3">Gps Monitoreo RADA</span>
         <ul class="navbar-nav ms-auto">
           <li class="nav-item dropdown">
-            <a 
-              href="#" 
-              class="nav-link dropdown-toggle" 
-              id="userMenu" 
-              role="button" 
-              data-bs-toggle="dropdown" 
-              aria-expanded="false"
-            >
+            <a href="#" class="nav-link dropdown-toggle" id="userMenu" role="button" @click.prevent="toggleDropdown"
+              aria-expanded="false">
               <i class="bi bi-person-circle"></i>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+            <ul class="dropdown-menu dropdown-menu-end" :class="{ show: isDropdownOpen }" aria-labelledby="userMenu">
               <li>
                 <router-link to="/settings" class="dropdown-item">
                   <i class="bi bi-gear"></i> Configuración
                 </router-link>
               </li>
-              <li><hr> class="dropdown-divider"></li>
+              <li>
+                <hr />
+              </li>
               <li>
                 <button class="dropdown-item" @click="logout">
                   <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
@@ -101,6 +97,7 @@
               </li>
             </ul>
           </li>
+
         </ul>
       </header>
 
@@ -113,16 +110,22 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 export default {
   name: "DashboardLayout",
   setup() {
     const router = useRouter();
+    const isDropdownOpen = ref(false); // Estado reactivo para el menú desplegable
 
     const toggleSidebar = () => {
       const sidebar = document.getElementById("sidebar");
       sidebar.classList.toggle("d-none");
+    };
+
+    const toggleDropdown = () => {
+      isDropdownOpen.value = !isDropdownOpen.value; // Alterna el estado del menú desplegable
     };
 
     const logout = () => {
@@ -134,11 +137,14 @@ export default {
 
     return {
       toggleSidebar,
+      toggleDropdown,
       logout,
+      isDropdownOpen,
     };
   },
 };
 </script>
+
 
 <style scoped>
 /* Dashboard layout styles */
@@ -165,4 +171,13 @@ main {
   height: calc(100vh - 56px);
   /* Altura restante después del header */
 }
+
+.dropdown-menu {
+  position: absolute;
+  right: 0; /* Alinea el menú al borde derecho del contenedor */
+  transform: translateX(10%);
+  z-index: 1050; /* Asegura que el menú se renderice sobre otros elementos */
+  min-width: 200px; /* Asegura un tamaño mínimo adecuado */
+}
+
 </style>

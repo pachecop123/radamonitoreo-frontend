@@ -14,10 +14,12 @@ import Settings from "../views/Settings.vue";
 import Gastos from "../views/Gastos.vue";
 import Login from "../components/Login.vue";
 import Register from "../components/Register.vue";
+import NotFound from "../components/404.vue";
 
 const routes = [
   { path: "/", name: "Login", component: Login },
   { path: "/register", name: "Register", component: Register },
+  { path: "/:pathMatch(.*)*", name: "NotFound", component: NotFound },
 
   {path: "/home", name: "Home", component: Home, meta: { requiresAuth: true } },
 
