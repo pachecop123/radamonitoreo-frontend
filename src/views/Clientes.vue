@@ -1,44 +1,47 @@
 <template>
-  <div class="container mt-5">
-    <!-- Buscador -->
-    <input
-      type="text"
-      v-model="searchQuery"
-      class="form-control mb-4 shadow-sm"
-      placeholder="Buscar cliente..."
-    />
-    <h2 class="mb-4">Clientes</h2>
-    <button class="btn btn-success mb-3" @click="openModal">
-      Crear Nuevo Cliente
-    </button>
+  <div class="custom-container mt-3">
+    <div class="card shadow">
+      <div class="card-header text-center bg-primary text-white">
+        <h3>Gestión de clientes</h3>
+      </div>
 
-    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-      <table class="table table-striped table-bordered">
-        <thead class="thead-blue">
-          <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Correo</th>
-            <th>Teléfono</th>
-            <th>Dirección</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(cliente, index) in filteredClientes" :key="cliente.id">
-            <td>{{ index + 1 }}</td>
-            <td>{{ cliente.nombre }}</td>
-            <td>{{ cliente.correo }}</td>
-            <td>{{ cliente.telefono }}</td>
-            <td>{{ cliente.direccion }}</td>
-            <td>
-              <button class="btn btn-warning btn-sm" @click="editCliente(cliente)">Editar</button>
-              <button class="btn btn-danger btn-sm" @click="deleteCliente(cliente.id)">Eliminar</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="card-body">
+        <button class="btn btn-success mb-3" @click="openModal">
+          Crear Nuevo Cliente
+        </button>
+        <input type="text" v-model="searchQuery" class="form-control mb-4 shadow-sm" placeholder="Buscar cliente..." />
+      </div>
+      <div class="mt-4">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="bg-light">
+              <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(cliente, index) in filteredClientes" :key="cliente.id">
+                <td>{{ index + 1 }}</td>
+                <td>{{ cliente.nombre }}</td>
+                <td>{{ cliente.correo }}</td>
+                <td>{{ cliente.telefono }}</td>
+                <td>{{ cliente.direccion }}</td>
+                <td>
+                  <button class="btn btn-warning btn-sm" @click="editCliente(cliente)">Editar</button>
+                  <button class="btn btn-danger btn-sm" @click="deleteCliente(cliente.id)">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+
 
     <!-- Modal para crear/editar clientes -->
     <div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
@@ -46,7 +49,8 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="clienteModalLabel">{{ isEditing ? 'Editar Cliente' : 'Crear Cliente' }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="closeModal"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+              @click="closeModal"></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="isEditing ? updateCliente() : createCliente()">
@@ -190,27 +194,14 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  max-width: 900px; 
+.custom-container {
+  max-width: 1400px; /* Ajusta el tamaño máximo según tus necesidades */
+  margin: 0 auto; /* Centra el contenedor horizontalmente */
 }
-
-.table {
-  background-color: #ffffff; 
-  border-radius: 0.5rem; 
-  overflow: hidden; 
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+.card-header {
+  font-size: 1.5rem;
 }
-
-.thead-blue th {
-  background-color: #007bff; /* Color azul similar al primary */
-  color: white; 
-}
-
-.modal-content {
-  border-radius: 0.5rem; 
-}
-
-.btn {
-  transition: background-color 0.3s ease; 
+button {
+  min-width: 80px;
 }
 </style>
