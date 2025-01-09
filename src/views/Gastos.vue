@@ -1,50 +1,14 @@
 <template>
-  <div class="container mt-3">
+  <div class="custom-container mt-3">
     <div class="card shadow">
       <div class="card-header text-center bg-primary text-white">
         <h3>Gestión de Gastos</h3>
       </div>
       <div class="card-body">
-        <form @submit.prevent="handleSubmit">
-          <!-- Información del Gasto -->
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="fecha" class="form-label">Fecha</label>
-              <input type="date" id="fecha" class="form-control" v-model="gasto.fecha" required />
-            </div>
-            <div class="col-md-6">
-              <label for="tipo" class="form-label">Tipo de Gasto</label>
-              <select id="tipo" class="form-select" v-model="gasto.tipo" required>
-                <option value="">Seleccione un tipo</option>
-                <option value="administrativos">Administrativos</option>
-                <option value="operativos">Operativos</option>
-                <option value="no operativos">No Operativos</option>
-                <option value="ventas">Ventas</option>
-                <option value="otros">Otros</option>
-              </select>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-12">
-              <label for="descripcion" class="form-label">Descripción</label>
-              <input type="text" id="descripcion" class="form-control" v-model="gasto.descripcion" required />
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="valor" class="form-label">Valor</label>
-              <input type="number" id="valor" class="form-control" v-model="gasto.valor" required />
-            </div>
-          </div>
-          <!-- Botones de Acción -->
-          <div class="row mb-3">
-            <div class="col-md-12 text-end">
-              <button type="submit" class="btn btn-primary me-2">{{ editMode ? 'Actualizar Gasto' : 'Guardar Gasto' }}</button>
-              <button type="button" class="btn btn-secondary me-2" @click="limpiarFormulario">Limpiar</button>
-              <button type="button" class="btn btn-danger" @click="cancelar">Cancelar</button>
-            </div>
-          </div>
-        </form>
+        <button class="btn btn-success mb-3" @click="openModal">
+          Crear Nuevo Gasto
+        </button>
+
         <!-- Tabla de Gastos -->
         <div class="mt-4">
           <div class="btn-group mb-3" role="group">
@@ -69,7 +33,7 @@
                   <td>{{ g.fecha }}</td>
                   <td>{{ g.tipo }}</td>
                   <td>{{ g.descripcion }}</td>
-                  <td>{{ g.valor }}</td>
+                  <td>{{ formatCurrency(g.valor) }}</td>
                   <td>
                     <button class="btn btn-sm btn-warning me-2" @click="editGasto(index)">Editar</button>
                     <button class="btn btn-sm btn-danger" @click="deleteGasto(index)">Eliminar</button>
@@ -81,54 +45,145 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal para crear/editar gastos -->
+    <div class="modal fade" id="gastoModal" tabindex="-1" aria-labelledby="gastoModalLabel" aria-hidden="true" ref="gastoModal">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="gastoModalLabel">{{ isEditing ? 'Editar Gasto' : 'Crear Gasto' }}</h5>
+            <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="isEditing ? updateGasto() : createGasto()">
+              <div class="mb-3">
+                <label for="fecha" class="form-label">Fecha</label>
+                <input v-model="gastoData.fecha" type="date" class="form-control" id="fecha" required />
+              </div>
+              <div class="mb-3">
+                <label for="tipo" class="form-label">Tipo de Gasto</label>
+                <select v-model="gastoData.tipo" id="tipo" class="form-select" required>
+                  <option value="">Seleccione un tipo</option>
+                  <option value="administrativos">Administrativos</option>
+                  <option value="operativos">Operativos</option>
+                  <option value="no operativos">No Operativos</option>
+                  <option value="ventas">Ventas</option>
+                  <option value="otros">Otros</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea v-model="gastoData.descripcion" class="form-control" id="descripcion" rows="4" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="valor" class="form-label">Valor</label>
+                <input v-model="gastoData.valor" @input="formatInput" type="text" class="form-control" id="valor" required />
+              </div>
+              <button type="submit" class="btn btn-primary">{{ isEditing ? 'Actualizar' : 'Crear' }}</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import Swal from 'sweetalert2';
+import { Modal } from 'bootstrap';
+
 export default {
   data() {
     return {
-      gasto: {
+      gastoData: {
         fecha: '',
         tipo: '',
         descripcion: '',
-        valor: 0,
+        valor: 0
       },
       gastos: [],
-      editMode: false,
-      editIndex: -1,
-      filtro: 'todos',
+      isEditing: false,
+      currentGastoIndex: null,
+      filtro: 'todos'
     };
   },
   methods: {
-    handleSubmit() {
-      if (this.editMode) {
-        this.gastos.splice(this.editIndex, 1, { ...this.gasto });
-        this.editMode = false;
-        this.editIndex = -1;
+    openModal() {
+      this.resetGastoData();
+      this.isEditing = false;
+      if (this.gastoModalInstance) {
+        this.gastoModalInstance.show();
       } else {
-        this.gastos.push({ ...this.gasto });
+        this.gastoModalInstance = new Modal(this.$refs.gastoModal);
+        this.gastoModalInstance.show();
       }
-      this.limpiarFormulario();
     },
-    limpiarFormulario() {
-      this.gasto = {
+    resetGastoData() {
+      this.gastoData = {
         fecha: '',
         tipo: '',
         descripcion: '',
-        valor: 0,
+        valor: 0
       };
     },
+    async createGasto() {
+      try {
+        const newGasto = { ...this.gastoData, id: Date.now() }; // Simulación de creación de gasto
+        newGasto.valor = this.unformatCurrency(newGasto.valor); // Desformatear el valor antes de guardar
+        this.gastos.push(newGasto);
+        this.closeModal();
+        Swal.fire('Éxito', 'Gasto creado con éxito', 'success');
+      } catch (error) {
+        console.error('Error creating gasto', error);
+        Swal.fire('Error', 'No se pudo crear el gasto', 'error');
+      }
+    },
     editGasto(index) {
-      this.gasto = { ...this.gastos[index] };
-      this.editMode = true;
-      this.editIndex = index;
+      this.gastoData = { ...this.gastos[index] };
+      this.isEditing = true;
+      this.currentGastoIndex = index;
+      if (this.gastoModalInstance) {
+        this.gastoModalInstance.show();
+      } else {
+        this.gastoModalInstance = new Modal(this.$refs.gastoModal);
+        this.gastoModalInstance.show();
+      }
     },
-    deleteGasto(index) {
-      this.gastos.splice(index, 1);
+    async updateGasto() {
+      try {
+        this.gastoData.valor = this.unformatCurrency(this.gastoData.valor); // Desformatear el valor antes de guardar
+        this.gastos.splice(this.currentGastoIndex, 1, { ...this.gastoData });
+        this.closeModal();
+        Swal.fire('Éxito', 'Gasto actualizado con éxito', 'success');
+      } catch (error) {
+        console.error('Error updating gasto', error);
+        Swal.fire('Error', 'No se pudo actualizar el gasto', 'error');
+      }
     },
-    cancelar() {
-      this.$router.push('/');
+    async deleteGasto(index) {
+      const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: 'No podrás recuperar este gasto después de eliminarlo.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+      });
+
+      if (result.isConfirmed) {
+        try {
+          this.gastos.splice(index, 1);
+          Swal.fire('Eliminado!', 'El gasto ha sido eliminado.', 'success');
+        } catch (error) {
+          console.error('Error deleting gasto', error);
+          Swal.fire('Error', 'No se pudo eliminar el gasto', 'error');
+        }
+      }
+    },
+    closeModal() {
+      if (this.gastoModalInstance) {
+        this.gastoModalInstance.hide();
+      }
     },
     filtrarGastos() {
       const hoy = new Date().toISOString().split('T')[0];
@@ -145,15 +200,45 @@ export default {
         return this.gastos;
       }
     },
+    formatCurrency(value) {
+      if (typeof value === 'string') {
+        value = value.replace(/\D/g, '');
+      }
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(value);
+    },
+    unformatCurrency(value) {
+      return value.replace(/\D/g, '');
+    },
+    formatInput(event) {
+      const value = event.target.value;
+      this.gastoData.valor = this.formatCurrency(value);
+    }
   },
+  mounted() {
+    this.gastoModalInstance = new Modal(this.$refs.gastoModal);
+  }
 };
 </script>
 
 <style scoped>
+.custom-container {
+  max-width: 1400px; /* Ajusta el tamaño máximo según tus necesidades */
+  margin: 0 auto; /* Centra el contenedor horizontalmente */
+}
 .card-header {
   font-size: 1.5rem;
 }
 button {
   min-width: 100px;
+}
+#descripcion {
+  height: 100px; /* Ajusta esta altura según tus necesidades */
+  word-wrap: break-word; /* Agrega esta propiedad para que se ajuste el texto */
+  white-space: pre-wrap; /* Agrega esta propiedad para que se ajuste el texto */
 }
 </style>
