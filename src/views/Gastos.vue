@@ -9,6 +9,13 @@
           Crear Gasto
         </button>
 
+        <input
+      type="text"
+      v-model="searchQuery"
+      class="form-control mb-4 shadow-sm"
+      placeholder="Buscar gasto..."
+    />
+
         <!-- Tabla de Gastos -->
         <div class="mt-4">
           <div class="btn-group mb-3" role="group">
@@ -234,7 +241,7 @@ export default {
   font-size: 1.5rem;
 }
 button {
-  min-width: 100px;
+  min-width: 80px;
 }
 #descripcion {
   height: 100px; /* Ajusta esta altura según tus necesidades */
