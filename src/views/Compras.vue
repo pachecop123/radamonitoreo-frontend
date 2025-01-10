@@ -1,139 +1,137 @@
 <template>
-  <div class="container mt-3">
+  <div class="custom-container mt-3">
     <div class="card shadow">
       <div class="card-header text-center bg-primary text-white">
-        <h3>Compras</h3>
+        <h3>Gestión de Compras</h3>
       </div>
       <div class="card-body">
-        <div class="row">
-          <!-- Fecha -->
-          <div class="col-md-3 mb-3">
-            <label for="fecha" class="form-label">Fecha</label>
-            <input type="date" id="fecha" class="form-control" v-model="form.fecha" />
-          </div>
+        <button class="btn btn-success mb-3" @click="openModal">
+          Crear Compra
+        </button>
 
-          <!-- Información del Producto -->
-          <div class="col-md-9 d-flex align-items-center justify-content-between">
-            <div>
+        <input
+          type="text"
+          v-model="searchQuery"
+          class="form-control mb-4 shadow-sm"
+          placeholder="Buscar compra..."
+        />
 
-            </div>
-            <div class="d-flex justify-content-end">
-              <img v-if="selectedProducto.imagen" :src="selectedProducto.imagen" alt="Imagen del producto" class="img-fluid" width="100"/>
-            </div>
-          </div>
-        </div>
-
-        <!-- Proveedor -->
-        <div class="row">
-          <div class="col-md-3">
-            <label for="proveedor" class="form-label">Proveedor</label>
-            <select id="proveedor" class="form-select" v-model="form.proveedor" @change="cargarProveedor">
-              <option v-for="prov in proveedores" :key="prov.id" :value="prov.nombre">{{ prov.nombre }}</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label for="razonSocial" class="form-label">Razón Social</label>
-            <input type="text" id="razonSocial" class="form-control" v-model="form.razonSocial" readonly/>
-          </div>
-          <div class="col-md-3">
-            <label for="rut" class="form-label">RUT/RUC/DNI</label>
-            <input type="text" id="rut" class="form-control" v-model="form.rut" readonly/>
-          </div>
-          <div class="col-md-3">
-            <label for="celular" class="form-label">Celular</label>
-            <input type="text" id="celular" class="form-control" v-model="form.celular" readonly/>
-          </div>
-        </div>
-
-        <div class="row mt-3">
-          <div class="col-md-12">
-            <label for="direccion" class="form-label">Dirección</label>
-            <input id="direccion" class="form-control" v-model="form.direccion" readonly/>
-          </div>
-        </div>
-
-        <!-- Productos -->
+        <!-- Tabla de Compras -->
         <div class="mt-4">
-          <h5 class="text-center">Productos</h5>
-          <div class="row">
-            <div class="col-md-6">
-              <label for="producto" class="form-label">Producto</label>
-              <select id="producto" class="form-select" v-model="form.productoSeleccionado" @change="cargarProducto">
-                <option v-for="producto in productos" :key="producto.id" :value="producto.nombre">{{ producto.nombre }}</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label for="precio" class="form-label">Precio</label>
-              <input type="number" id="precio" class="form-control" v-model="form.precio" readonly/>
-            </div>
-            <div class="col-md-2">
-              <label for="cantidad" class="form-label">Cantidad</label>
-              <input type="number" id="cantidad" class="form-control" v-model="form.cantidad" />
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-              <button class="btn btn-primary w-100" @click="agregarProducto">
-                <i class="fas fa-cart-plus"></i> Agregar
-              </button>
-            </div>
+          <div class="btn-group mb-3" role="group">
+            <button type="button" class="btn btn-outline-primary" @click="filtro = 'hoy'">Hoy</button>
+            <button type="button" class="btn btn-outline-primary" @click="filtro = 'semana'">Esta Semana</button>
+            <button type="button" class="btn btn-outline-primary" @click="filtro = '15dias'">Últimos 15 Días</button>
+            <button type="button" class="btn btn-outline-primary" @click="filtro = 'todos'">Todos</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="bg-light">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Proveedor</th>
+                  <th>Razón Social</th>
+                  <th>RUT/RUC/DNI</th>
+                  <th>Celular</th>
+                  <th>Dirección</th>
+                  <th>Producto</th>
+                  <th>Precio</th>
+                  <th>Cantidad</th>
+                  <th>Valor</th>
+                  <th>Método de Pago</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(c, index) in filtrarCompras()" :key="index">
+                  <td>{{ c.fecha }}</td>
+                  <td>{{ c.proveedor }}</td>
+                  <td>{{ c.razonSocial }}</td>
+                  <td>{{ c.rut }}</td>
+                  <td>{{ c.celular }}</td>
+                  <td>{{ c.direccion }}</td>
+                  <td>{{ c.producto }}</td>
+                  <td>{{ formatCurrency(c.precio) }}</td>
+                  <td>{{ c.cantidad }}</td>
+                  <td>{{ formatCurrency(c.valor) }}</td>
+                  <td>{{ c.metodoPago }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-warning me-2" @click="editCompra(index)">Editar</button>
+                    <button class="btn btn-sm btn-danger" @click="deleteCompra(index)">Eliminar</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Lista de productos -->
-        <div class="table-responsive mt-4">
-          <table class="table table-bordered">
-            <thead class="bg-light">
-              <tr>
-                <th>Nombre</th>
-                <th>Precio</th>
-                <th>Cant.</th>
-                <th>Subt.</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, index) in carrito" :key="index">
-                <td>{{ item.nombre }}</td>
-                <td>{{ formatCurrency(item.precio) }}</td>
-                <td>{{ item.cantidad }}</td>
-                <td>{{ formatCurrency(item.subtotal) }}</td>
-                <td>
-                  <button class="btn btn-danger btn-sm" @click="eliminarProducto(index)">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Total -->
-        <div class="text-end mt-3">
-          <h5>Total: {{ formatCurrency(total) }}</h5>
-        </div>
-
-        <!-- Botones -->
-        <div class="d-flex justify-content-between mt-4">
-          <div>
-            <label class="form-check-label me-3">
-              <input type="radio" v-model="form.metodoPago" value="Transferencia" /> Transferencia
-            </label>
-            <label class="form-check-label me-3">
-              <input type="radio" v-model="form.metodoPago" value="Efectivo" /> Efectivo
-            </label>
-            <label class="form-check-label">
-              <input type="radio" v-model="form.metodoPago" value="Crédito" /> Crédito
-            </label>
+    <!-- Modal para crear/editar compras -->
+    <div class="modal fade" id="compraModal" tabindex="-1" aria-labelledby="compraModalLabel" aria-hidden="true" ref="compraModal">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="compraModalLabel">{{ isEditing ? 'Editar Compra' : 'Crear Compra' }}</h5>
+            <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
           </div>
-          <div>
-            <button class="btn btn-success me-2" @click="registrar">
-              <i class="fas fa-save"></i> Registrar
-            </button>
-            <button class="btn btn-secondary me-2" @click="limpiar">
-              <i class="fas fa-broom"></i> Limpiar
-            </button>
-            <button class="btn btn-danger" @click="cancelar">
-              <i class="fas fa-trash"></i> Cancelar
-            </button>
+          <div class="modal-body">
+            <form @submit.prevent="isEditing ? updateCompra() : createCompra()">
+              <div class="mb-3">
+                <label for="fecha" class="form-label">Fecha</label>
+                <input v-model="compraData.fecha" type="date" class="form-control" id="fecha" required />
+              </div>
+              <div class="mb-3">
+                <label for="proveedor" class="form-label">Proveedor</label>
+                <select v-model="compraData.proveedor" id="proveedor" class="form-select" @change="loadProveedorDetails" required>
+                  <option v-for="prov in proveedores" :key="prov.id" :value="prov.nombre">{{ prov.nombre }}</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="razonSocial" class="form-label">Razón Social</label>
+                <input v-model="compraData.razonSocial" type="text" class="form-control" id="razonSocial" readonly />
+              </div>
+              <div class="mb-3">
+                <label for="rut" class="form-label">RUT/RUC/DNI</label>
+                <input v-model="compraData.rut" type="text" class="form-control" id="rut" readonly />
+              </div>
+              <div class="mb-3">
+                <label for="celular" class="form-label">Celular</label>
+                <input v-model="compraData.celular" type="text" class="form-control" id="celular" readonly />
+              </div>
+              <div class="mb-3">
+                <label for="direccion" class="form-label">Dirección</label>
+                <input v-model="compraData.direccion" type="text" class="form-control" id="direccion" readonly />
+              </div>
+              <div class="mb-3">
+                <label for="producto" class="form-label">Producto</label>
+                <input v-model="compraData.producto" type="text" class="form-control" id="producto" required />
+              </div>
+              <div class="mb-3">
+                <label for="precio" class="form-label">Precio</label>
+                <input v-model="compraData.precio" @input="formatInput" type="text" class="form-control" id="precio" required />
+              </div>
+              <div class="mb-3">
+                <label for="cantidad" class="form-label">Cantidad</label>
+                <input v-model="compraData.cantidad" type="number" class="form-control" id="cantidad" required />
+              </div>
+              <div class="mb-3">
+                <label for="metodoPago" class="form-label">Método de Pago</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" v-model="compraData.metodoPago" value="Transferencia" id="transferencia" required />
+                  <label class="form-check-label" for="transferencia">Transferencia</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" v-model="compraData.metodoPago" value="Efectivo" id="efectivo" required />
+                  <label class="form-check-label" for="efectivo">Efectivo</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" v-model="compraData.metodoPago" value="Crédito" id="credito" required />
+                  <label class="form-check-label" for="credito">Crédito</label>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">{{ isEditing ? 'Actualizar' : 'Crear' }}</button>
+            </form>
           </div>
         </div>
       </div>
@@ -142,108 +140,181 @@
 </template>
 
 <script>
+import Swal from 'sweetalert2';
+import { Modal } from 'bootstrap';
+
 export default {
   data() {
     return {
-      form: {
-        fecha: "",
-        proveedor: "",
-        razonSocial: "",
-        rut: "",
-        celular: "",
-        direccion: "",
-        productoSeleccionado: "",
+      compraData: {
+        fecha: '',
+        proveedor: '',
+        razonSocial: '',
+        rut: '',
+        celular: '',
+        direccion: '',
+        producto: '',
         precio: 0,
         cantidad: 0,
-        metodoPago: "",
+        metodoPago: ''
       },
-      productos: [
-        { id: 1, nombre: "Producto A", precio: 100, imagen: "https://image.made-in-china.com/202f0j00UEuCWTaITPqe/Great-Will-Wired-GPS-Tracker-4G-Vehicle-GPS-Car-Tracking-Device-Real-Time-Location-Tracking-Hardwired-GPS-Tracker-Locator.webp" },
-        { id: 2, nombre: "Producto B", precio: 200, imagen: "https://via.placeholder.com/150?text=Producto+B" },
-      ],
+      compras: [],
       proveedores: [
-        { id: 1, nombre: "Proveedor X", razonSocial: "Razon Social X", rut: "123456789", celular: "987654321", direccion: "Calle Ficticia 123" },
-        { id: 2, nombre: "Proveedor Y", razonSocial: "Razon Social Y", rut: "987654321", celular: "123456789", direccion: "Avenida Ejemplo 456" },
+        { id: 1, nombre: 'Proveedor 1', razonSocial: 'Razón Social 1', rut: '123456789', celular: '987654321', direccion: 'Calle 1' },
+        { id: 2, nombre: 'Proveedor 2', razonSocial: 'Razón Social 2', rut: '987654321', celular: '123456789', direccion: 'Calle 2' }
       ],
-      carrito: [],
-      selectedProducto: {},
+      isEditing: false,
+      currentCompraIndex: null,
+      filtro: 'todos'
     };
   },
-  computed: {
-    total() {
-      return this.carrito.reduce((acc, item) => acc + item.subtotal, 0);
-    },
-    unidad() {
-      return "Und"; // Puedes ajustar según la lógica
-    },
-  },
   methods: {
-    agregarProducto() {
-      if (this.form.productoSeleccionado && this.form.precio > 0 && this.form.cantidad > 0) {
-        const subtotal = this.form.precio * this.form.cantidad;
-        this.carrito.push({
-          nombre: this.form.productoSeleccionado,
-          precio: this.form.precio,
-          cantidad: this.form.cantidad,
-          subtotal,
-        });
-        this.form.precio = 0;
-        this.form.cantidad = 0;
+    openModal() {
+      this.resetCompraData();
+      this.isEditing = false;
+      if (this.compraModalInstance) {
+        this.compraModalInstance.show();
+      } else {
+        this.compraModalInstance = new Modal(this.$refs.compraModal);
+        this.compraModalInstance.show();
       }
     },
-    eliminarProducto(index) {
-      this.carrito.splice(index, 1);
-    },
-    cargarProveedor() {
-      const proveedor = this.proveedores.find(p => p.nombre === this.form.proveedor);
-      if (proveedor) {
-        this.form.razonSocial = proveedor.razonSocial;
-        this.form.rut = proveedor.rut;
-        this.form.celular = proveedor.celular;
-        this.form.direccion = proveedor.direccion;
-      }
-    },
-    cargarProducto() {
-      const producto = this.productos.find(p => p.nombre === this.form.productoSeleccionado);
-      if (producto) {
-        this.form.precio = producto.precio;
-        this.selectedProducto = producto;
-      }
-    },
-    registrar() {
-      alert("Datos guardados correctamente");
-    },
-    limpiar() {
-      this.form = {
-        fecha: "",
-        proveedor: "",
-        razonSocial: "",
-        rut: "",
-        celular: "",
-        direccion: "",
-        productoSeleccionado: "",
+    resetCompraData() {
+      this.compraData = {
+        fecha: '',
+        proveedor: '',
+        razonSocial: '',
+        rut: '',
+        celular: '',
+        direccion: '',
+        producto: '',
         precio: 0,
         cantidad: 0,
-        metodoPago: "",
+        metodoPago: ''
       };
-      this.carrito = [];
-      this.selectedProducto = {}; // Reset selectedProducto to clear the image
     },
-    cancelar() {
-      alert("Datos eliminados correctamente");
+    async createCompra() {
+      try {
+        const newCompra = { ...this.compraData, id: Date.now() }; // Simulación de creación de compra
+        newCompra.valor = this.unformatCurrency(newCompra.precio) * newCompra.cantidad; // Calcular el valor antes de guardar
+        this.compras.push(newCompra);
+        this.closeModal();
+        Swal.fire('Éxito', 'Compra creada con éxito', 'success');
+      } catch (error) {
+        console.error('Error creating compra', error);
+        Swal.fire('Error', 'No se pudo crear la compra', 'error');
+      }
+    },
+    editCompra(index) {
+      this.compraData = { ...this.compras[index] };
+      this.isEditing = true;
+      this.currentCompraIndex = index;
+      if (this.compraModalInstance) {
+        this.compraModalInstance.show();
+      } else {
+        this.compraModalInstance = new Modal(this.$refs.compraModal);
+        this.compraModalInstance.show();
+      }
+    },
+    async updateCompra() {
+      try {
+        this.compraData.valor = this.unformatCurrency(this.compraData.precio) * this.compraData.cantidad; // Calcular el valor antes de guardar
+        this.compras.splice(this.currentCompraIndex, 1, { ...this.compraData });
+        this.closeModal();
+        Swal.fire('Éxito', 'Compra actualizada con éxito', 'success');
+      } catch (error) {
+        console.error('Error updating compra', error);
+        Swal.fire('Error', 'No se pudo actualizar la compra', 'error');
+      }
+    },
+    async deleteCompra(index) {
+      const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: 'No podrás recuperar esta compra después de eliminarla.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+      });
+
+      if (result.isConfirmed) {
+        try {
+          this.compras.splice(index, 1);
+          Swal.fire('Eliminado!', 'La compra ha sido eliminada.', 'success');
+        } catch (error) {
+          console.error('Error deleting compra', error);
+          Swal.fire('Error', 'No se pudo eliminar la compra', 'error');
+        }
+      }
+    },
+    closeModal() {
+      if (this.compraModalInstance) {
+        this.compraModalInstance.hide();
+      }
+    },
+    filtrarCompras() {
+      const hoy = new Date().toISOString().split('T')[0];
+      const unaSemanaAntes = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0];
+      const quinceDiasAntes = new Date(new Date().setDate(new Date().getDate() - 15)).toISOString().split('T')[0];
+
+      if (this.filtro === 'hoy') {
+        return this.compras.filter(c => c.fecha === hoy);
+      } else if (this.filtro === 'semana') {
+        return this.compras.filter(c => c.fecha >= unaSemanaAntes && c.fecha <= hoy);
+      } else if (this.filtro === '15dias') {
+        return this.compras.filter(c => c.fecha >= quinceDiasAntes && c.fecha <= hoy);
+      } else {
+        return this.compras;
+      }
     },
     formatCurrency(value) {
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(value);
+      if (typeof value === 'string') {
+        value = value.replace(/\D/g, '');
+      }
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(value);
     },
+    unformatCurrency(value) {
+      return value.replace(/\D/g, '');
+    },
+    formatInput(event) {
+      const value = event.target.value;
+      this.compraData.precio = this.formatCurrency(value);
+    },
+    loadProveedorDetails() {
+      const proveedor = this.proveedores.find(p => p.nombre === this.compraData.proveedor);
+      if (proveedor) {
+        this.compraData.razonSocial = proveedor.razonSocial;
+        this.compraData.rut = proveedor.rut;
+        this.compraData.celular = proveedor.celular;
+        this.compraData.direccion = proveedor.direccion;
+      }
+    }
   },
+  mounted() {
+    this.compraModalInstance = new Modal(this.$refs.compraModal);
+  }
 };
 </script>
 
 <style scoped>
+.custom-container {
+  max-width: 1400px; /* Ajusta el tamaño máximo según tus necesidades */
+  margin: 0 auto; /* Centra el contenedor horizontalmente */
+}
 .card-header {
   font-size: 1.5rem;
 }
 button {
-  min-width: 120px;
+  min-width: 80px;
+}
+#descripcion {
+  height: 100px; /* Ajusta esta altura según tus necesidades */
+  word-wrap: break-word; /* Agrega esta propiedad para que se ajuste el texto */
+  white-space: pre-wrap; /* Agrega esta propiedad para que se ajuste el texto */
 }
 </style>

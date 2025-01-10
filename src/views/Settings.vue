@@ -9,11 +9,6 @@
         <div class="text-center mb-4">
           <img :src="configuracion.imagenUsuario" alt="Imagen del Usuario" class="img-fluid rounded-circle" width="150" />
           <h4 class="mt-2">{{ configuracion.rol }}</h4>
-          <!-- Campo para subir imagen -->
-          <div class="mt-3">
-            <label for="imagenUsuario" class="form-label">Subir Imagen</label>
-            <input type="file" id="imagenUsuario" class="form-control" @change="handleImageUpload" />
-          </div>
         </div>
         <!-- Campos de Configuración -->
         <div class="row mb-4">
@@ -44,6 +39,16 @@
           <div class="col-md-6">
             <label for="celular" class="form-label">Celular</label>
             <input type="text" id="celular" class="form-control" v-model="configuracion.celular" />
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <label for="imagenUsuario" class="form-label">Subir Imagen</label>
+            <input type="file" id="imagenUsuario" class="form-control" @change="handleImageUpload" />
+          </div>
+          <div class="col-md-6">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" id="password" class="form-control" v-model="configuracion.password" />
           </div>
         </div>
         <!-- Botones de Acción -->
@@ -77,7 +82,8 @@ export default {
         primerApellido: '',
         segundoApellido: '',
         email: '',
-        celular: ''
+        celular: '',
+        password: ''
       }
     };
   },
@@ -95,7 +101,8 @@ export default {
         primerApellido: '',
         segundoApellido: '',
         email: '',
-        celular: ''
+        celular: '',
+        password: ''
       };
     },
     cancelar() {
