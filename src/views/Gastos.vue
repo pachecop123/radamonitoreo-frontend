@@ -9,12 +9,7 @@
           Crear Gasto
         </button>
 
-        <input
-      type="text"
-      v-model="searchQuery"
-      class="form-control mb-4 shadow-sm"
-      placeholder="Buscar gasto..."
-    />
+        <input type="text" v-model="searchQuery" class="form-control mb-4 shadow-sm" placeholder="Buscar gasto..." />
 
         <!-- Tabla de Gastos -->
         <div class="mt-4">
@@ -54,7 +49,8 @@
     </div>
 
     <!-- Modal para crear/editar gastos -->
-    <div class="modal fade" id="gastoModal" tabindex="-1" aria-labelledby="gastoModalLabel" aria-hidden="true" ref="gastoModal">
+    <div class="modal fade" id="gastoModal" tabindex="-1" aria-labelledby="gastoModalLabel" aria-hidden="true"
+      ref="gastoModal">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -80,11 +76,13 @@
               </div>
               <div class="mb-3">
                 <label for="descripcion" class="form-label">Descripción</label>
-                <textarea v-model="gastoData.descripcion" class="form-control" id="descripcion" rows="4" required></textarea>
+                <textarea v-model="gastoData.descripcion" class="form-control" id="descripcion" rows="4"
+                  required></textarea>
               </div>
               <div class="mb-3">
                 <label for="valor" class="form-label">Valor</label>
-                <input v-model="gastoData.valor" @input="formatInput" type="text" class="form-control" id="valor" required />
+                <input v-model="gastoData.valor" @input="formatInput" type="text" class="form-control" id="valor"
+                  required />
               </div>
               <button type="submit" class="btn btn-primary">{{ isEditing ? 'Actualizar' : 'Crear' }}</button>
             </form>
@@ -234,18 +232,26 @@ export default {
 
 <style scoped>
 .custom-container {
-  max-width: 1400px; /* Ajusta el tamaño máximo según tus necesidades */
-  margin: 0 auto; /* Centra el contenedor horizontalmente */
+  max-width: 1400px;
+  /* Ajusta el tamaño máximo según tus necesidades */
+  margin: 0 auto;
+  /* Centra el contenedor horizontalmente */
 }
+
 .card-header {
   font-size: 1.5rem;
 }
+
 button {
   min-width: 80px;
 }
+
 #descripcion {
-  height: 100px; /* Ajusta esta altura según tus necesidades */
-  word-wrap: break-word; /* Agrega esta propiedad para que se ajuste el texto */
-  white-space: pre-wrap; /* Agrega esta propiedad para que se ajuste el texto */
+  height: 100px;
+  /* Ajusta esta altura según tus necesidades */
+  word-wrap: break-word;
+  /* Agrega esta propiedad para que se ajuste el texto */
+  white-space: pre-wrap;
+  /* Agrega esta propiedad para que se ajuste el texto */
 }
 </style>

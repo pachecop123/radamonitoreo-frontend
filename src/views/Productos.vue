@@ -9,6 +9,8 @@
           Crear Producto
         </button>
 
+        <input v-model="searchQuery"  type="text" class="form-control mb-4 shadow-sm" placeholder="Buscar cliente..." />
+
         <!-- Tabla de Productos -->
         <div class="mt-4">
           <div class="btn-group mb-3" role="group">
@@ -21,21 +23,23 @@
             <table class="table table-bordered table-hover">
               <thead class="bg-light">
                 <tr>
+                  <th>Imagen del Producto</th>
                   <th>Nombre del Producto</th>
                   <th>Precio de Compra</th>
+                  <th>Margen de ganancia</th>
                   <th>Precio de Venta</th>
-                  <th>% IVA</th>
-                  <th>Precio de Venta + IVA</th>
+                  <th>Precio Venta + IVA</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(prod, index) in productos" :key="index">
-                  <td>{{ prod.nombre }}</td>
-                  <td>{{ prod.precioCompra }}</td>
-                  <td>{{ prod.precioVenta.toFixed(2) }}</td>
-                  <td>{{ prod.iva }}%</td>
-                  <td>{{ prod.precioVentaTotal.toFixed(2) }}</td>
+                <tr v-for="(row, index) in filteredData" :key="index">
+                  <td>{{ row.image }}</td>
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.purchase_price}}</td>
+                  <td>{{ row.profit_margin }}</td>
+                  <td>{{ row.sale_price}}</td>
+                  <td>{{ row.total_sale_price}}</td>
                   <td>
                     <button class="btn btn-sm btn-warning me-2" @click="editProduct(index)">Editar</button>
                     <button class="btn btn-sm btn-danger" @click="deleteProduct(index)">Eliminar</button>
@@ -163,10 +167,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { useApi } from '@/composables/use-api';
+import { ref, computed, onMounted } from 'vue';
+import Swal from 'sweetalert2';
 
 const isModalOpen = ref(false);
 const isEditing = ref(false);
+
+onMounted(() => {
+  dataTableApi();
+});
 
 const openModal = () => {
   isModalOpen.value = true;
@@ -175,6 +185,24 @@ const openModal = () => {
 const closeModal = () => {
   isModalOpen.value = false;
 };
+
+const searchQuery = ref('')
+const tableData = ref([])
+
+//BUSCADOR DE PRODUCTOS
+const filteredData = computed(() => {
+  const searchLower = searchQuery.value.toLowerCase();
+
+  console.log("Query:", searchQuery.value); 
+  console.log("Table Data:", tableData.value); 
+
+  return tableData.value.filter((product) => {
+    const name = product.name ? product.name.toLowerCase() : '';
+    const description = product.description ? product.description.toLowerCase() : '';
+
+    return name.includes(searchLower) || description.includes(searchLower);
+  });
+});
 
 const formData = ref({
   name: '',
@@ -231,6 +259,179 @@ const resetFormData = () => {
   isEditing.value = false
 }
 
+const discardButton = ref(null)
+
+
+//TABLA DE PRODUCTOS
+const dataTableApi = async () => {
+  try {
+    const data = await useApi('product');
+    console.log("Datos cargados desde API:", data);
+
+    tableData.value = data.map((item) => ({
+      id: item.id,
+      image: item.image || '', 
+      name: item.name || '', 
+      description: item.description || '', 
+      purchase_price: item.purchase_price || 0,
+      profit_margin: item.profit_margin || 0,
+      sale_price: item.sale_price || 0,
+      total_sale_price: item.total_sale_price || 0,
+    }));
+  } catch (error) {
+    console.log('Error al cargar datos desde API:', error);
+  }
+};
+
+//GUARDAR PRODUCTOS
+const saveProduct = async () => {
+  console.log("Lo que quiero ver es esto: ",formData.value)
+  errorsClear()
+
+  let has_error = false
+  Object.entries(formData.value).forEach(f => {
+    const elemento = f[0]
+    const value = f[1]
+    if (value === '') {
+      has_error = true
+      errors.value[elemento] = 'Este campo es obrigatório'
+    }
+  })
+  if (has_error) {
+    return
+  }
+
+  try {
+    await useApi("product", "POST", formData.value)
+    Swal.fire({
+      title: 'Exito',
+      text: 'Producto agregado con exito',
+      icon: 'success',
+      confirmButtonText: '¡Entendido!'
+    }).then(() => {
+      if(discardButton.value) {
+        discardButton.value.click()
+      }
+      resetFormData()
+    })
+  } catch (error) {
+    const errors_api = error.errors
+    Object.entries(errors_api).forEach(e => {
+      const elemento = e[0]
+      const mensaje = e[1]
+      errors.value[elemento] = mensaje
+    })
+  }
+
+  await dataTableApi()
+  openModal.value = false
+}
+
+let id;
+//VISUALIZAR PRODUCTOS EN EDICION
+const viewProduct = async (user) => {
+  try {
+    const response = await useApi("product/" + user.id)
+
+    console.log(response)
+
+    if (response.message === "Product found") {
+      id = user.id
+      formData.value = {
+        "name": response.data.name,
+        "description": response.data.description,
+        "purchase_price": response.data.purchase_price,
+        "profit_margin": response.data.profit_margin,
+        "sale_price": response.data.sale_price,
+        "vat": response.data.vat,
+        "total_sale_price": response.data.total_sale_price,
+        "image": response.data.image,
+        "stock": response.data.stock,
+      }
+
+      console.log("Las valores de formData: ", formData.value)
+      openModal.value = true
+    } else {
+      console.log("Producto no encontrado")
+    }
+  } catch (error) {
+    console.log("Error al obtener los datos del producto:", error)
+  }
+}
+
+
+//EDITAR PRODUCTOS
+const editProduct = async () => {
+  try {
+    const dataUpdated = {
+      "name": response.data.name,
+      "description": response.data.description,
+      "purchase_price": response.data.purchase_price,
+      "profit_margin": response.data.profit_margin,
+      "sale_price": response.data.sale_price,
+      "vat": response.data.vat,
+      "total_sale_price": response.data.total_sale_price,
+      "image": response.data.image,
+      "stock": response.data.stock,
+    }
+
+    await useApi("product/" + id, "PUT", dataUpdated)
+
+    Swal.fire({
+      title: "Exito",
+      text: "Producto actualizado con exito",
+      icon: "success",
+      confirmButtonText: '¡Entendido!'
+    }).then(() => {
+      if (discardButton.value) {
+        discardButton.value.click()
+      }
+      resetFormData()
+    })
+  } catch (error) {
+    console.log("Error al actualizar el producto:", error)
+  }
+  dataTableApi()
+}
+
+
+//ELIMINAR PRODUCTOS
+const deleteProduct = async (user) => {
+  const result = await Swal.fire({
+    title: "¿Estas seguro de eliminar el producto?",
+    text: "No podrás recuperar el producto eliminado",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: '¡Sí, eliminar!',
+  })
+
+  if (result.isConfirmed) {
+    try {
+      await useApi("product/" + user.id, "DELETE")
+
+      tableData.value = tableData.value.filter((d) => d.id !== user.id)
+
+      Swal.fire({
+        title: "¡Eliminado!",
+        text: "El producto ha sido eliminado con exito",
+        icon: "success",
+        confirmButtonText: '¡Entendido!'
+      })
+      dataTableApi()
+    } catch (error) {
+      console.error("Error al eliminar el producto:", error)
+
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo eliminar el producto. Intentelo de nuevo.",
+        icon: "error",
+        confirmButtonText: 'Aceptar'
+      })
+    }
+  }
+}
 
 //   methods: {
 //     calcularPrecios() {
