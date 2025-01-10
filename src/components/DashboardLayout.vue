@@ -45,6 +45,11 @@
           </router-link>
         </li>
         <li class="nav-item">
+          <router-link to="/proveedores" class="nav-link text-white">
+            <i class="bi bi-wallet2"></i> Proveedores
+          </router-link>
+        </li>
+        <li class="nav-item">
           <router-link to="/cuentas-por-cobrar" class="nav-link text-white">
             <i class="bi bi-cash"></i> Ctas. Por Cobrar
           </router-link>
