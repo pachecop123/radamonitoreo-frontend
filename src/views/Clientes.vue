@@ -6,208 +6,282 @@
       </div>
 
       <div class="card-body">
-        <button class="btn btn-success mb-3" @click="openModal">
-          Crear Nuevo Cliente
-        </button>
-        <input type="text" v-model="searchQuery" class="form-control mb-4 shadow-sm" placeholder="Buscar cliente..." />
+        <input
+          type="text"
+          v-model="searchQuery"
+          class="form-control mb-4 shadow-sm"
+          placeholder="Buscar cliente..."
+        />
 
-        <div class="mt-4">
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-              <thead class="bg-light">
-                <tr>
-                  <th>#</th>
-                  <th>Nombre</th>
-                  <th>Correo</th>
-                  <th>Teléfono</th>
-                  <th>Dirección</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(cliente, index) in filteredClientes" :key="cliente.id">
-                  <td>{{ index + 1 }}</td>
-                  <td>{{ cliente.nombre }}</td>
-                  <td>{{ cliente.correo }}</td>
-                  <td>{{ cliente.telefono }}</td>
-                  <td>{{ cliente.direccion }}</td>
-                  <td>
-                    <button class="btn btn-warning btn-sm" @click="editCliente(cliente)">Editar</button>
-                    <button class="btn btn-danger btn-sm" @click="deleteCliente(cliente.id)">Eliminar</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <button class="btn btn-primary mb-4" @click="openCreateModal">Crear Cliente</button>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="bg-light">
+              <tr>
+                <th>#</th>
+                <th>Identificacion</th>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!customers.length">
+                <td colspan="6">No se encontraron clientes.</td>
+              </tr>
+              <tr
+                v-else
+                v-for="(customer, index) in customers"
+                :key="customer.id"
+              >
+                <td>{{ calculateIndex(index) }}</td>
+                <td>{{ customer.dni }}</td>
+                <td>{{ customer.name }}</td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.phone }}</td>
+                <td>{{ customer.address }}</td>
+                <td>
+                  <button class="btn btn-warning btn-sm" @click="openEditModal(customer)">Editar</button>
+                  <button class="btn btn-danger btn-sm" @click="confirmDelete(customer.id)">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
+        <div
+          class="pagination d-flex align-items-center justify-content-center mt-3"
+        >
+          <button
+            @click="goToPage(currentPage - 1)"
+            :disabled="currentPage === 1"
+          >
+            Anterior
+          </button>
+          <span>Página {{ currentPage }} de {{ totalPages }}</span>
+          <button
+            @click="goToPage(currentPage + 1)"
+            :disabled="currentPage === totalPages"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
     </div>
+  </div>
 
-
-    <!-- Modal para crear/editar clientes -->
-    <div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="clienteModalLabel">{{ isEditing ? 'Editar Cliente' : 'Crear Cliente' }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-              @click="closeModal"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="isEditing ? updateCliente() : createCliente()">
-              <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre</label>
-                <input v-model="clienteData.nombre" type="text" class="form-control" id="nombre" required />
-              </div>
-              <div class="mb-3">
-                <label for="correo" class="form-label">Correo</label>
-                <input v-model="clienteData.correo" type="email" class="form-control" id="correo" required />
-              </div>
-              <div class="mb-3">
-                <label for="telefono" class="form-label">Teléfono</label>
-                <input v-model="clienteData.telefono" type="text" class="form-control" id="telefono" required />
-              </div>
-              <div class="mb-3">
-                <label for="direccion" class="form-label">Dirección</label>
-                <input v-model="clienteData.direccion" type="text" class="form-control" id="direccion" required />
-              </div>
-              <button type="submit" class="btn btn-primary">{{ isEditing ? 'Actualizar' : 'Crear' }}</button>
-            </form>
-          </div>
+  <!-- Modal -->
+  <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="customerModalLabel">{{ showEditForm ? 'Editar Cliente' : 'Crear Cliente' }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="showEditForm ? updateCliente() : createCliente()">
+            <div class="form-group">
+              <label for="name">DNI</label>
+              <input type="text" v-model="form.dni" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="name">Nombre</label>
+              <input type="text" v-model="form.name" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Correo</label>
+              <input type="email" v-model="form.email" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="phone">Teléfono</label>
+              <input type="text" v-model="form.phone" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="address">Dirección</label>
+              <input type="text" v-model="form.address" class="form-control" required />
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-success">{{ showEditForm ? 'Actualizar' : 'Crear' }}</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import Swal from 'sweetalert2';
-import { Modal } from 'bootstrap';
+<script setup>
+import { ref, onMounted, watch } from "vue";
+import { useApi } from "@/composables/use-api";
+import Swal from "sweetalert2";
+import * as bootstrap from "bootstrap";
 
-export default {
-  name: 'Clientes',
-  data() {
-    return {
-      clientes: [
-        { id: 1, nombre: 'Juan Pérez', correo: 'juan.perez@example.com', telefono: '555-1234', direccion: 'Av. Siempre Viva 123' },
-        { id: 2, nombre: 'María Gómez', correo: 'maria.gomez@example.com', telefono: '555-5678', direccion: 'Calle Falsa 456' },
-        { id: 3, nombre: 'Carlos Ramírez', correo: 'carlos.ramirez@example.com', telefono: '555-8765', direccion: 'Boulevard de los Sueños 789' },
-        { id: 4, nombre: 'Ana Torres', correo: 'ana.torres@example.com', telefono: '555-4321', direccion: 'Camino Real 101' },
-        { id: 5, nombre: 'Luis Méndez', correo: 'luis.mendez@example.com', telefono: '555-6789', direccion: 'Plaza Mayor 202' }
-      ],
-      clienteData: {
-        nombre: '',
-        correo: '',
-        telefono: '',
-        direccion: ''
-      },
-      isEditing: false,
-      currentClienteId: null,
-      searchQuery: ''
-    };
-  },
-  computed: {
-    filteredClientes() {
-      if (!this.searchQuery) {
-        return this.clientes;
-      }
-      return this.clientes.filter(cliente =>
-        cliente.nombre.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        cliente.correo.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        cliente.telefono.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        cliente.direccion.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-    }
-  },
-  methods: {
-    openModal() {
-      this.resetClienteData();
-      this.isEditing = false;
-      const modalElement = document.getElementById('clienteModal');
-      const modal = new Modal(modalElement);
-      modal.show();
-    },
-    resetClienteData() {
-      this.clienteData = {
-        nombre: '',
-        correo: '',
-        telefono: '',
-        direccion: ''
-      };
-    },
-    async createCliente() {
-      try {
-        const newCliente = { ...this.clienteData, id: Date.now() }; // Simulación de creación de cliente
-        this.clientes.push(newCliente);
-        this.closeModal();
-        Swal.fire('Éxito', 'Cliente creado con éxito', 'success');
-      } catch (error) {
-        console.error('Error creating cliente', error);
-        Swal.fire('Error', 'No se pudo crear el cliente', 'error');
-      }
-    },
-    editCliente(cliente) {
-      this.clienteData = { ...cliente };
-      this.isEditing = true;
-      this.currentClienteId = cliente.id;
-      const modalElement = document.getElementById('clienteModal');
-      const modal = new Modal(modalElement);
-      modal.show();
-    },
-    async updateCliente() {
-      try {
-        const index = this.clientes.findIndex(c => c.id === this.currentClienteId);
-        this.clientes[index] = { ...this.clienteData, id: this.currentClienteId };
-        this.closeModal();
-        Swal.fire('Éxito', 'Cliente actualizado con éxito', 'success');
-      } catch (error) {
-        console.error('Error updating cliente', error);
-        Swal.fire('Error', 'No se pudo actualizar el cliente', 'error');
-      }
-    },
-    async deleteCliente(id) {
-      const result = await Swal.fire({
-        title: '¿Estás seguro?',
-        text: 'No podrás recuperar este cliente después de eliminarlo.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-      });
+const customers = ref([]);
+const searchQuery = ref("");
+const currentPage = ref(1);
+const totalPages = ref(1);
+const itemsPerPage = 5;
+const showCreateForm = ref(false);
+const showEditForm = ref(false);
+const form = ref({
+  id: null,
+  name: "",
+  email: "",
+  phone: "",
+  address: ""
+});
 
-      if (result.isConfirmed) {
-        try {
-          this.clientes = this.clientes.filter(c => c.id !== id);
-          Swal.fire('Eliminado!', 'El cliente ha sido eliminado.', 'success');
-        } catch (error) {
-          console.error('Error deleting cliente', error);
-          Swal.fire('Error', 'No se pudo eliminar el cliente', 'error');
-        }
-      }
-    },
-    closeModal() {
-      const modalElement = document.getElementById('clienteModal');
-      const modal = Modal.getInstance(modalElement);
-      modal.hide();
-    }
+// Fetch paginated customers
+const fetchCustomers = async (page = 1, search = "") => {
+  try {
+    const response = await useApi(
+      `customer?page=${page}&itemsPerPage=${itemsPerPage}&search=${search}`
+    );
+    customers.value = response.customers.data; // Clientes filtrados
+    currentPage.value = response.customers.current_page; // Página actual
+    totalPages.value = response.customers.last_page; // Total de páginas
+  } catch (error) {
+    console.error("Error al cargar los clientes:", error);
   }
 };
+
+// Crear cliente
+const createCliente = async () => {
+  try {
+    await useApi("customer", "POST", form.value);
+    fetchCustomers(currentPage.value);
+    cancelForm();
+    Swal.fire("Éxito", "Cliente creado exitosamente", "success");
+  } catch (error) {
+    console.error("Error al crear el cliente:", error);
+    Swal.fire("Error", "No se pudo crear el cliente", "error");
+  }
+};
+
+// Editar cliente
+const openEditModal = (customer) => {
+  form.value = { ...customer };
+  showEditForm.value = true;
+  showCreateForm.value = false;
+  new bootstrap.Modal(document.getElementById('customerModal')).show();
+};
+
+// Actualizar cliente
+const updateCliente = async () => {
+  try {
+    await useApi(`customer/${form.value.id}`, "PUT", form.value);
+    fetchCustomers(currentPage.value);
+    cancelForm();
+    Swal.fire("Éxito", "Cliente actualizado exitosamente", "success");
+  } catch (error) {
+    console.error("Error al actualizar el cliente:", error);
+    Swal.fire("Error", "No se pudo actualizar el cliente", "error");
+  }
+};
+
+// Eliminar cliente
+const confirmDelete = (id) => {
+  Swal.fire({
+    title: "¿Estás seguro?",
+    text: "No podrás revertir esto",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Sí, eliminar"
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await useApi(`customer/${id}`, "DELETE");
+        fetchCustomers(currentPage.value);
+        Swal.fire("Eliminado", "Cliente eliminado exitosamente", "success");
+      } catch (error) {
+        console.error("Error al eliminar el cliente:", error);
+        Swal.fire("Error", "No se pudo eliminar el cliente", "error");
+      }
+    }
+  });
+};
+
+// Cancelar formulario
+const cancelForm = () => {
+  form.value = {
+    id: null,
+    name: "",
+    email: "",
+    phone: "",
+    address: ""
+  };
+  showCreateForm.value = false;
+  showEditForm.value = false;
+  const modalElement = document.getElementById('customerModal');
+  const modalInstance = bootstrap.Modal.getInstance(modalElement);
+  if (modalInstance) {
+    modalInstance.hide();
+  }
+};
+
+// Abrir modal de creación
+const openCreateModal = () => {
+  cancelForm();
+  showCreateForm.value = true;
+  showEditForm.value = false;
+  new bootstrap.Modal(document.getElementById('customerModal')).show();
+};
+
+// Cambiar de página
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    fetchCustomers(page, searchQuery.value);
+  }
+};
+
+// Calcular índice global
+const calculateIndex = (index) => {
+  return (currentPage.value - 1) * itemsPerPage + index + 1;
+};
+
+// Cargar clientes al montar el componente
+onMounted(() => {
+  fetchCustomers();
+});
+
+watch(searchQuery, (newQuery) => {
+  fetchCustomers(1, newQuery); // Reinicia a la página 1 cuando se busca algo nuevo
+});
 </script>
 
 <style scoped>
 .custom-container {
   max-width: 1400px;
-  /* Ajusta el tamaño máximo según tus necesidades */
   margin: 0 auto;
-  /* Centra el contenedor horizontalmente */
 }
 
 .card-header {
   font-size: 1.5rem;
 }
 
-button {
-  min-width: 80px;
+.pagination button {
+  background-color: #4e73df;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: bold;
+  margin: 0 5px;
+}
+
+.pagination button:disabled {
+  background-color: #e0e0e0;
+  color: #7a7a7a;
+}
+
+.pagination span {
+  font-weight: bold;
+  color: #4e73df;
 }
 </style>
