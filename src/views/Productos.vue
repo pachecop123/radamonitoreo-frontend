@@ -9,7 +9,7 @@
           Crear Producto
         </button>
 
-        <input v-model="searchQuery"  type="text" class="form-control mb-4 shadow-sm" placeholder="Buscar producto..." />
+        <input v-model="searchQuery" type="text" class="form-control mb-4 shadow-sm" placeholder="Buscar producto..." />
 
         <!-- Tabla de Productos -->
         <div class="mt-4">
@@ -36,10 +36,10 @@
                 <tr v-for="(row, index) in filteredData" :key="index">
                   <td>{{ row.image }}</td>
                   <td>{{ row.name }}</td>
-                  <td>{{ row.purchase_price}}</td>
+                  <td>{{ row.purchase_price }}</td>
                   <td>{{ row.profit_margin }}</td>
-                  <td>{{ row.sale_price}}</td>
-                  <td>{{ row.total_sale_price}}</td>
+                  <td>{{ row.sale_price }}</td>
+                  <td>{{ row.total_sale_price }}</td>
                   <td>
                     <button class="btn btn-sm btn-warning me-2" @click="editProduct(index)">Editar</button>
                     <button class="btn btn-sm btn-danger" @click="deleteProduct(index)">Eliminar</button>
@@ -85,7 +85,7 @@
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="imagen" class="form-label">Imagen del Producto</label>
-                  <input type="file" id="imagen" class="form-control"/>
+                  <input type="file" id="imagen" class="form-control" @change="handleFileChange" />
                   <img :src="formData.image" alt="Imagen del producto" class="img-fluid mt-3" v-if="formData.image" />
                   <template v-if="errors.image.length > 0">
                     <b :key="e" v-for="e in errors.image" class="text-danger">
@@ -128,7 +128,7 @@
               <div class="row mb-3">
                 <div class="col-md-4">
                   <label for="precioVenta" class="form-label">Precio de Venta</label>
-                  <input v-model="formData.sale_price" type="number" id="precioVenta" class="form-control"/>
+                  <input v-model="formData.sale_price" type="number" id="precioVenta" class="form-control" />
                   <template v-if="errors.sale_price.length > 0">
                     <b :key="e" v-for="e in errors.sale_price" class="text-danger">
                       {{ e }}
@@ -192,9 +192,6 @@ const tableData = ref([])
 //BUSCADOR DE PRODUCTOS
 const filteredData = computed(() => {
   const searchLower = searchQuery.value.toLowerCase();
-
-  console.log("Query:", searchQuery.value); 
-  console.log("Table Data:", tableData.value); 
 
   return tableData.value.filter((product) => {
     const name = product.name ? product.name.toLowerCase() : '';
@@ -270,9 +267,9 @@ const dataTableApi = async () => {
 
     tableData.value = data.map((item) => ({
       id: item.id,
-      image: item.image || '', 
-      name: item.name || '', 
-      description: item.description || '', 
+      image: item.image || '',
+      name: item.name || '',
+      description: item.description || '',
       purchase_price: item.purchase_price || 0,
       profit_margin: item.profit_margin || 0,
       sale_price: item.sale_price || 0,
@@ -285,47 +282,63 @@ const dataTableApi = async () => {
 
 //GUARDAR PRODUCTOS
 const saveProduct = async () => {
-  console.log("Lo que quiero ver es esto: ",formData.value)
-  errorsClear()
+  console.log("Lo que quiero ver es esto: ", formData.value);
+  errorsClear();
 
-  let has_error = false
+  let has_error = false;
+
   Object.entries(formData.value).forEach(f => {
-    const elemento = f[0]
-    const value = f[1]
-    if (value === '') {
-      has_error = true
-      errors.value[elemento] = 'Este campo es obrigatório'
+    const elemento = f[0];
+    const value = f[1];
+
+    // Validar si el campo está vacío
+    if (value === '' && (elemento !== 'image' || (elemento === 'image' && !formData.value.image))) {
+      has_error = true;
+      errors.value[elemento] = 'Este campo es obligatorio';
     }
-  })
+  });
+
   if (has_error) {
-    return
+    return;
   }
 
   try {
-    await useApi("product", "POST", formData.value)
+    // Aquí podrías incluir el manejo de subida de archivo si es necesario
+    await useApi("product", "POST", formData.value);
     Swal.fire({
-      title: 'Exito',
-      text: 'Producto agregado con exito',
+      title: 'Éxito',
+      text: 'Producto agregado con éxito',
       icon: 'success',
       confirmButtonText: '¡Entendido!'
     }).then(() => {
-      if(discardButton.value) {
-        discardButton.value.click()
+      if (discardButton.value) {
+        discardButton.value.click();
       }
-      resetFormData()
-    })
+      resetFormData();
+    });
   } catch (error) {
-    const errors_api = error.errors
+    const errors_api = error.errors;
     Object.entries(errors_api).forEach(e => {
-      const elemento = e[0]
-      const mensaje = e[1]
-      errors.value[elemento] = mensaje
-    })
+      const elemento = e[0];
+      const mensaje = e[1];
+      errors.value[elemento] = mensaje;
+    });
   }
 
-  await dataTableApi()
-  openModal.value = false
-}
+  await filteredData();
+  await dataTableApi();
+  openModal.value = false;
+};
+
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    formData.value.image = URL.createObjectURL(file);
+  } else {
+    formData.value.image = '';
+  }
+};
+
 
 let id;
 //VISUALIZAR PRODUCTOS EN EDICION
@@ -448,4 +461,5 @@ button {
   display: block;
   background-color: rgba(0, 0, 0, 0.5);
 }
+
 </style>
