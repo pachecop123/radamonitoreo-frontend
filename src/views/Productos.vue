@@ -9,7 +9,7 @@
           Crear Producto
         </button>
 
-        <input v-model="searchQuery"  type="text" class="form-control mb-4 shadow-sm" placeholder="Buscar cliente..." />
+        <input v-model="searchQuery"  type="text" class="form-control mb-4 shadow-sm" placeholder="Buscar producto..." />
 
         <!-- Tabla de Productos -->
         <div class="mt-4">
@@ -85,7 +85,7 @@
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="imagen" class="form-label">Imagen del Producto</label>
-                  <input type="file" id="imagen" class="form-control" @change="handleImageUpload" />
+                  <input type="file" id="imagen" class="form-control"/>
                   <img :src="formData.image" alt="Imagen del producto" class="img-fluid mt-3" v-if="formData.image" />
                   <template v-if="errors.image.length > 0">
                     <b :key="e" v-for="e in errors.image" class="text-danger">
@@ -433,61 +433,6 @@ const deleteProduct = async (user) => {
   }
 }
 
-//   methods: {
-//     calcularPrecios() {
-//       const precioVenta = this.producto.precioCompra * (1 + this.producto.margenGanancia / 100);
-//       let precioVentaTotal = precioVenta;
-
-//       if (this.producto.tipoIVA === 'incluir') {
-//         precioVentaTotal = precioVenta * (1 + this.producto.iva / 100);
-//       } else if (this.producto.tipoIVA === 'incluido') {
-//         precioVentaTotal = precioVenta / (1 + this.producto.iva / 100);
-//       }
-
-//       this.producto.precioVenta = precioVenta;
-//       this.producto.precioVentaTotal = precioVentaTotal;
-//     },
-//     handleImageUpload(event) {
-//       const file = event.target.files[0];
-//       if (file) {
-//         const reader = new FileReader();
-//         reader.onload = e => {
-//           this.producto.imagenUrl = e.target.result;
-//         };
-//         reader.readAsDataURL(file);
-//       }
-//     },
-//     handleSubmit() {
-//       if (this.editMode) {
-//         this.productos.splice(this.editIndex, 1, { ...this.producto });
-//         this.editMode = false;
-//         this.editIndex = -1;
-//       } else {
-//         this.productos.push({ ...this.producto });
-//       }
-//       this.limpiarFormulario();
-//     },
-//     limpiarFormulario() {
-//       this.producto = {
-//         nombre: '',
-//         precioCompra: 0,
-//         margenGanancia: 0,
-//         precioVenta: 0,
-//         iva: 0,
-//         precioVentaTotal: 0,
-//         imagenUrl: '',
-//         tipoIVA: 'sin',
-//       };
-//     },
-//     editProduct(index) {
-//       this.producto = { ...this.productos[index] };
-//       this.editMode = true;
-//       this.editIndex = index;
-//     },
-//     deleteProduct(index) {
-//       this.productos.splice(index, 1);
-//     },
-// };
 </script>
 
 <style scoped>
