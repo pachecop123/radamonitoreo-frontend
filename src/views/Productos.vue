@@ -5,20 +5,11 @@
         <h3>Gestión de Productos</h3>
       </div>
       <div class="card-body">
-        <button class="btn btn-success mb-3" @click="openModal">
-          Crear Producto
-        </button>
-
         <input v-model="searchQuery" type="text" class="form-control mb-4 shadow-sm" placeholder="Buscar producto..." />
+        <button class="btn btn-primary mb-3" @click="openModal">Crear Producto</button>
 
         <!-- Tabla de Productos -->
         <div class="mt-4">
-          <div class="btn-group mb-3" role="group">
-            <button type="button" class="btn btn-outline-primary" @click="filtro = 'hoy'">Hoy</button>
-            <button type="button" class="btn btn-outline-primary" @click="filtro = 'semana'">Esta Semana</button>
-            <button type="button" class="btn btn-outline-primary" @click="filtro = '15dias'">Últimos 15 Días</button>
-            <button type="button" class="btn btn-outline-primary" @click="filtro = 'todos'">Todos</button>
-          </div>
           <div class="table-responsive">
             <table class="table table-bordered table-hover">
               <thead class="bg-light">
@@ -47,6 +38,15 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="pagination d-flex align-items-center justify-content-center mt-3">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
+              Anterior
+            </button>
+            <span>Página {{ currentPage }} de {{ totalPages }}</span>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">
+              Siguiente
+            </button>
           </div>
         </div>
       </div>
@@ -191,6 +191,8 @@ const tableData = ref([])
 
 //BUSCADOR DE PRODUCTOS
 const filteredData = computed(() => {
+  console.log("Datos filtrados:", filteredData.value);
+
   const searchLower = searchQuery.value.toLowerCase();
 
   return tableData.value.filter((product) => {
@@ -257,6 +259,33 @@ const resetFormData = () => {
 }
 
 const discardButton = ref(null)
+
+// CAMBIAR DE PAGINA
+const currentPage = ref(1);
+const totalPages = ref(1);
+const perPage = 10;
+
+const fetchProducts = async (page = 1) => {
+  try {
+    const response = await useApi(`product?page=${page}&per_page=${perPage}`);
+    tableData.value = response.data;
+    currentPage.value = response.current_page;
+    totalPages.value = response.last_page;
+  } catch (error) {
+    console.log("Error al cargar datos:", error);
+  }
+};
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    fetchProducts(page);
+  }
+};
+
+// Llama a la API cuando el componente se monta
+onMounted(() => {
+  fetchProducts();
+});
 
 
 //TABLA DE PRODUCTOS
@@ -449,17 +478,32 @@ const deleteProduct = async (user) => {
 </script>
 
 <style scoped>
+.custom-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 .card-header {
   font-size: 1.5rem;
 }
 
-button {
-  min-width: 120px;
+.pagination button {
+  background-color: #4e73df;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: bold;
+  margin: 0 5px;
 }
 
-.modal.show {
-  display: block;
-  background-color: rgba(0, 0, 0, 0.5);
+.pagination button:disabled {
+  background-color: #e0e0e0;
+  color: #7a7a7a;
 }
 
+.pagination span {
+  font-weight: bold;
+  color: #4e73df;
+}
 </style>

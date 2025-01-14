@@ -6,12 +6,7 @@
       </div>
 
       <div class="card-body">
-        <input
-          type="text"
-          v-model="searchQuery"
-          class="form-control mb-4 shadow-sm"
-          placeholder="Buscar cliente..."
-        />
+        <input type="text" v-model="searchQuery" class="form-control mb-4 shadow-sm" placeholder="Buscar cliente..." />
 
         <button class="btn btn-primary mb-4" @click="openCreateModal">Crear Cliente</button>
 
@@ -32,11 +27,7 @@
               <tr v-if="!customers.length">
                 <td colspan="6">No se encontraron clientes.</td>
               </tr>
-              <tr
-                v-else
-                v-for="(customer, index) in customers"
-                :key="customer.id"
-              >
+              <tr v-else v-for="(customer, index) in customers" :key="customer.id">
                 <td>{{ calculateIndex(index) }}</td>
                 <td>{{ customer.dni }}</td>
                 <td>{{ customer.name }}</td>
@@ -51,21 +42,12 @@
             </tbody>
           </table>
         </div>
-
-        <div
-          class="pagination d-flex align-items-center justify-content-center mt-3"
-        >
-          <button
-            @click="goToPage(currentPage - 1)"
-            :disabled="currentPage === 1"
-          >
+        <div class="pagination d-flex align-items-center justify-content-center mt-3">
+          <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
             Anterior
           </button>
           <span>Página {{ currentPage }} de {{ totalPages }}</span>
-          <button
-            @click="goToPage(currentPage + 1)"
-            :disabled="currentPage === totalPages"
-          >
+          <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">
             Siguiente
           </button>
         </div>
