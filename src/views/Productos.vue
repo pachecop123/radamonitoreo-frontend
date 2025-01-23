@@ -6,7 +6,7 @@
       </div>
       <div class="card-body">
         <input v-model="searchQuery" type="text" class="form-control mb-4 shadow-sm" placeholder="Buscar producto..." />
-        <button class="btn btn-primary mb-3" @click="openModal">Crear Producto</button>
+        <button class="btn btn-primary mb-3" @click="openCreateModal">Crear Producto</button>
 
         <!-- Tabla de Productos -->
         <div class="mt-4">
@@ -33,7 +33,7 @@
                   <td>{{ row.total_sale_price }}</td>
                   <td>
                     <button class="btn btn-sm btn-warning me-2" @click="viewProduct(row)">Editar</button>
-                    <button class="btn btn-sm btn-danger" @click="deleteProduct(index)">Eliminar</button>
+                    <button class="btn btn-sm btn-danger" @click="deleteProduct(row)">Eliminar</button>
                   </td>
                 </tr>
               </tbody>
@@ -56,7 +56,7 @@
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Crear Producto</h5>
+            <h5 class="modal-title">Crear</h5>
             <button type="button" class="btn-close p-0" @click="resetFormData"></button>
           </div>
           <div class="modal-body">
@@ -199,9 +199,8 @@
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="editImagen" class="form-label">Imagen del Producto</label>
-                  <input type="file" id="editImagen" class="form-control" @change="handleEditFileChange" />
-                  <img :src="formData.image" alt="Imagen del producto" class="img-fluid mt-3"
-                    v-if="formData.image" />
+                  <input type="file" id="editImagen" class="form-control" @change="handleFileChange" />
+                  <img :src="formData.image" alt="Imagen del producto" class="img-fluid mt-3" v-if="formData.image" />
                   <template v-if="errors.image.length > 0">
                     <b :key="e" v-for="e in errors.image" class="text-danger">
                       {{ e }}
@@ -222,8 +221,7 @@
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="editPrecioCompra" class="form-label">Precio de Compra</label>
-                  <input v-model="formData.purchase_price" type="number" id="editPrecioCompra"
-                    class="form-control" />
+                  <input v-model="formData.purchase_price" type="number" id="editPrecioCompra" class="form-control" />
                   <template v-if="errors.purchase_price.length > 0">
                     <b :key="e" v-for="e in errors.purchase_price" class="text-danger">
                       {{ e }}
@@ -232,8 +230,7 @@
                 </div>
                 <div class="col-md-6">
                   <label for="editMargenGanancia" class="form-label">Margen de Ganancia (%)</label>
-                  <input v-model="formData.profit_margin" type="number" id="editMargenGanancia"
-                    class="form-control" />
+                  <input v-model="formData.profit_margin" type="number" id="editMargenGanancia" class="form-control" />
                   <template v-if="errors.profit_margin.length > 0">
                     <b :key="e" v-for="e in errors.profit_margin" class="text-danger">
                       {{ e }}
@@ -245,8 +242,7 @@
               <div class="row mb-3">
                 <div class="col-md-4">
                   <label for="editPrecioVenta" class="form-label">Precio de Venta</label>
-                  <input :value="computedSalePrice" type="number" id="editPrecioVenta" class="form-control"
-                    readonly />
+                  <input :value="computedSalePrice" type="number" id="editPrecioVenta" class="form-control" readonly />
                   <template v-if="errors.sale_price.length > 0">
                     <b :key="e" v-for="e in errors.sale_price" class="text-danger">
                       {{ e }}
@@ -264,8 +260,8 @@
                 </div>
                 <div class="col-md-4">
                   <label for="editPrecioVentaTotal" class="form-label">Precio Total</label>
-                  <input :value="computedTotalSalePrice" type="number" id="editPrecioVentaTotal"
-                    class="form-control" readonly />
+                  <input :value="computedTotalSalePrice" type="number" id="editPrecioVentaTotal" class="form-control"
+                    readonly />
                   <template v-if="errors.total_sale_price.length > 0">
                     <b :key="e" v-for="e in errors.total_sale_price" class="text-danger">
                       {{ e }}
@@ -298,9 +294,8 @@ onMounted(() => {
   dataTableApi();
 });
 
-const openModal = () => {
+const openCreateModal = () => {
   isModalOpen.value = true;
-  isEditModalOpen.value = true;
 };
 
 const searchQuery = ref('')
@@ -483,7 +478,7 @@ const saveProduct = async () => {
   }
 
   await dataTableApi();
-  openModal.value = false;
+  openCreateModal.value = false;
 };
 
 const handleFileChange = (event) => {
@@ -530,74 +525,78 @@ const viewProduct = async (user) => {
 const editProduct = async () => {
   try {
     const dataUpdated = {
-      "name": formData.value.name,
-      "description": formData.value.description,
-      "purchase_price": formData.value.purchase_price,
-      "profit_margin": formData.value.profit_margin,
-      "sale_price": formData.value.sale_price,
-      "vat": formData.value.vat,
-      "total_sale_price": formData.value.total_sale_price,
-      "image": formData.value.image,
-      "stock": formData.value.stock,
-    }
+      name: formData.value.name,
+      description: formData.value.description,
+      purchase_price: parseFloat(formData.value.purchase_price) || 0,
+      profit_margin: parseFloat(formData.value.profit_margin) || 0,
+      sale_price: computedSalePrice.value, // Precio de venta calculado
+      vat: parseFloat(formData.value.vat) || 0,
+      total_sale_price: computedTotalSalePrice.value, // Precio total calculado
+      image: formData.value.image,
+      stock: parseInt(formData.value.stock, 10) || 0,
+    };
 
-    await useApi("product/" + id, "PUT", dataUpdated)
+    await useApi("product/" + id, "PUT", dataUpdated);
 
     Swal.fire({
-      title: "Exito",
-      text: "Producto actualizado con exito",
+      title: "Éxito",
+      text: "Producto actualizado con éxito",
       icon: "success",
-      confirmButtonText: '¡Entendido!'
+      confirmButtonText: "¡Entendido!",
     }).then(() => {
       if (discardButton.value) {
-        discardButton.value.click()
+        discardButton.value.click();
       }
-      resetFormData()
-    })
+      resetFormData();
+      fetchProducts(); // Recargar la tabla desde la API
+    });
   } catch (error) {
-    console.log("Error al actualizar el producto:", error)
+    console.error("Error al actualizar el producto:", error);
   }
-  dataTableApi()
-}
-
+};
 
 //ELIMINAR PRODUCTOS
-const deleteProduct = async (user) => {
+const deleteProduct = async (product) => {
   const result = await Swal.fire({
-    title: "¿Estas seguro de eliminar el producto?",
-    text: "No podrás recuperar el producto eliminado",
+    title: "¿Estás seguro de eliminar el producto?",
+    text: "No podrás recuperar el producto eliminado.",
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: '¡Sí, eliminar!',
-  })
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "¡Sí, eliminar!",
+    cancelButtonText: "Cancelar",
+  });
 
   if (result.isConfirmed) {
     try {
-      await useApi("product/" + user.id, "DELETE")
+      await useApi("product/"+ product.id, "DELETE");
 
-      tableData.value = tableData.value.filter((d) => d.id !== user.id)
+      // Eliminar producto de `tableData` localmente
+      filteredData.value = filteredData.value.filter((item) => item.id !== product.id);
 
       Swal.fire({
         title: "¡Eliminado!",
-        text: "El producto ha sido eliminado con exito",
+        text: "El producto ha sido eliminado con éxito.",
         icon: "success",
-        confirmButtonText: '¡Entendido!'
-      })
-      dataTableApi()
+        confirmButtonText: "¡Entendido!",
+      });
+
+      // Recargar la tabla desde la API (opcional, para garantizar datos actualizados)
+      fetchProducts(); // Recargar la tabla desde la API
+
     } catch (error) {
-      console.error("Error al eliminar el producto:", error)
+      console.error("Error al eliminar el producto:", error);
 
       Swal.fire({
         title: "Error",
-        text: "No se pudo eliminar el producto. Intentelo de nuevo.",
+        text: "No se pudo eliminar el producto. Inténtelo de nuevo.",
         icon: "error",
-        confirmButtonText: 'Aceptar'
-      })
+        confirmButtonText: "Aceptar",
+      });
     }
   }
-}
+};
 
 const computedSalePrice = computed(() => {
   const purchasePrice = parseFloat(formData.value.purchase_price) || 0;
