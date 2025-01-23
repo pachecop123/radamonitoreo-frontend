@@ -32,7 +32,7 @@
                   <td>{{ row.sale_price }}</td>
                   <td>{{ row.total_sale_price }}</td>
                   <td>
-                    <button class="btn btn-sm btn-warning me-2" @click="editProduct(index)">Editar</button>
+                    <button class="btn btn-sm btn-warning me-2" @click="viewProduct(row)">Editar</button>
                     <button class="btn btn-sm btn-danger" @click="deleteProduct(index)">Eliminar</button>
                   </td>
                 </tr>
@@ -51,7 +51,7 @@
         </div>
       </div>
     </div>
-    <!-- Modal para crear/editar productos -->
+    <!--MODAL CREAR PRODUCTOS -->
     <div v-if="isModalOpen" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5);">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -128,7 +128,7 @@
               <div class="row mb-3">
                 <div class="col-md-4">
                   <label for="precioVenta" class="form-label">Precio de Venta</label>
-                  <input v-model="formData.sale_price" type="number" id="precioVenta" class="form-control" />
+                  <input :value="computedSalePrice" type="number" id="precioVenta" class="form-control" readonly />
                   <template v-if="errors.sale_price.length > 0">
                     <b :key="e" v-for="e in errors.sale_price" class="text-danger">
                       {{ e }}
@@ -146,7 +146,8 @@
                 </div>
                 <div class="col-md-4">
                   <label for="precioVentaTotal" class="form-label">Precio Total</label>
-                  <input v-model="formData.total_sale_price" type="number" id="precioVentaTotal" class="form-control" />
+                  <input :value="computedTotalSalePrice" type="number" id="precioVentaTotal" class="form-control"
+                    readonly />
                   <template v-if="errors.total_sale_price.length > 0">
                     <b :key="e" v-for="e in errors.total_sale_price" class="text-danger">
                       {{ e }}
@@ -163,6 +164,125 @@
         </div>
       </div>
     </div>
+
+    <!-- MODAL EDITAR PRODUCTOS -->
+    <div v-if="isEditModalOpen" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5);">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Producto</h5>
+            <button type="button" class="btn-close p-0" @click="resetFormData"></button>
+          </div>
+          <div class="modal-body">
+            <div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="editNombre" class="form-label">Nombre del Producto</label>
+                  <input v-model="formData.name" type="text" id="editNombre" class="form-control" />
+                  <template v-if="errors.name.length > 0">
+                    <b :key="e" v-for="e in errors.name" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+                <div class="col-md-6">
+                  <label for="editDescripcion" class="form-label">Descripción del Producto</label>
+                  <input v-model="formData.description" type="text" id="editDescripcion" class="form-control" />
+                  <template v-if="errors.description.length > 0">
+                    <b :key="e" v-for="e in errors.description" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+              </div>
+              <!-- Imagen y stock -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="editImagen" class="form-label">Imagen del Producto</label>
+                  <input type="file" id="editImagen" class="form-control" @change="handleEditFileChange" />
+                  <img :src="formData.image" alt="Imagen del producto" class="img-fluid mt-3"
+                    v-if="formData.image" />
+                  <template v-if="errors.image.length > 0">
+                    <b :key="e" v-for="e in errors.image" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+                <div class="col-md-6">
+                  <label for="editStock" class="form-label">Stock</label>
+                  <input v-model="formData.stock" type="number" id="editStock" class="form-control mb-3" />
+                  <template v-if="errors.stock.length > 0">
+                    <b :key="e" v-for="e in errors.stock" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+              </div>
+              <!-- Precio de compra y margen de ganancia -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="editPrecioCompra" class="form-label">Precio de Compra</label>
+                  <input v-model="formData.purchase_price" type="number" id="editPrecioCompra"
+                    class="form-control" />
+                  <template v-if="errors.purchase_price.length > 0">
+                    <b :key="e" v-for="e in errors.purchase_price" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+                <div class="col-md-6">
+                  <label for="editMargenGanancia" class="form-label">Margen de Ganancia (%)</label>
+                  <input v-model="formData.profit_margin" type="number" id="editMargenGanancia"
+                    class="form-control" />
+                  <template v-if="errors.profit_margin.length > 0">
+                    <b :key="e" v-for="e in errors.profit_margin" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+              </div>
+              <!-- Precio de venta, IVA y precio total -->
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <label for="editPrecioVenta" class="form-label">Precio de Venta</label>
+                  <input :value="computedSalePrice" type="number" id="editPrecioVenta" class="form-control"
+                    readonly />
+                  <template v-if="errors.sale_price.length > 0">
+                    <b :key="e" v-for="e in errors.sale_price" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+                <div class="col-md-4">
+                  <label for="editIva" class="form-label">% IVA</label>
+                  <input v-model="formData.vat" type="number" id="editIva" class="form-control" />
+                  <template v-if="errors.vat.length > 0">
+                    <b :key="e" v-for="e in errors.vat" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+                <div class="col-md-4">
+                  <label for="editPrecioVentaTotal" class="form-label">Precio Total</label>
+                  <input :value="computedTotalSalePrice" type="number" id="editPrecioVentaTotal"
+                    class="form-control" readonly />
+                  <template v-if="errors.total_sale_price.length > 0">
+                    <b :key="e" v-for="e in errors.total_sale_price" class="text-danger">
+                      {{ e }}
+                    </b>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary me-lg-auto" @click="resetFormData">Cerrar</button>
+            <button type="button" class="btn btn-primary" @click="editProduct">Editar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -172,7 +292,7 @@ import { ref, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 
 const isModalOpen = ref(false);
-const isEditing = ref(false);
+const isEditModalOpen = ref(false);
 
 onMounted(() => {
   dataTableApi();
@@ -180,10 +300,7 @@ onMounted(() => {
 
 const openModal = () => {
   isModalOpen.value = true;
-};
-
-const closeModal = () => {
-  isModalOpen.value = false;
+  isEditModalOpen.value = true;
 };
 
 const searchQuery = ref('')
@@ -255,7 +372,7 @@ const resetFormData = () => {
   }
   errorsClear()
   isModalOpen.value = false
-  isEditing.value = false
+  isEditModalOpen.value = false
 }
 
 const discardButton = ref(null)
@@ -287,7 +404,6 @@ onMounted(() => {
   fetchProducts();
 });
 
-
 //TABLA DE PRODUCTOS
 const dataTableApi = async () => {
   try {
@@ -311,7 +427,20 @@ const dataTableApi = async () => {
 
 //GUARDAR PRODUCTOS
 const saveProduct = async () => {
-  console.log("Lo que quiero ver es esto: ", formData.value);
+
+  if (isNaN(parseFloat(formData.value.purchase_price)) || isNaN(parseFloat(formData.value.profit_margin))) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Por favor, ingresa valores válidos para Precio de Compra y Margen de Ganancia.',
+      icon: 'error',
+      confirmButtonText: 'Entendido'
+    });
+    return;
+  }
+
+  formData.value.sale_price = computedSalePrice.value;
+  formData.value.total_sale_price = computedTotalSalePrice.value;
+
   errorsClear();
 
   let has_error = false;
@@ -332,7 +461,6 @@ const saveProduct = async () => {
   }
 
   try {
-    // Aquí podrías incluir el manejo de subida de archivo si es necesario
     await useApi("product", "POST", formData.value);
     Swal.fire({
       title: 'Éxito',
@@ -354,7 +482,6 @@ const saveProduct = async () => {
     });
   }
 
-  await filteredData();
   await dataTableApi();
   openModal.value = false;
 };
@@ -367,7 +494,6 @@ const handleFileChange = (event) => {
     formData.value.image = '';
   }
 };
-
 
 let id;
 //VISUALIZAR PRODUCTOS EN EDICION
@@ -391,8 +517,7 @@ const viewProduct = async (user) => {
         "stock": response.data.stock,
       }
 
-      console.log("Las valores de formData: ", formData.value)
-      openModal.value = true
+      isEditModalOpen.value = true
     } else {
       console.log("Producto no encontrado")
     }
@@ -401,20 +526,19 @@ const viewProduct = async (user) => {
   }
 }
 
-
 //EDITAR PRODUCTOS
 const editProduct = async () => {
   try {
     const dataUpdated = {
-      "name": response.data.name,
-      "description": response.data.description,
-      "purchase_price": response.data.purchase_price,
-      "profit_margin": response.data.profit_margin,
-      "sale_price": response.data.sale_price,
-      "vat": response.data.vat,
-      "total_sale_price": response.data.total_sale_price,
-      "image": response.data.image,
-      "stock": response.data.stock,
+      "name": formData.value.name,
+      "description": formData.value.description,
+      "purchase_price": formData.value.purchase_price,
+      "profit_margin": formData.value.profit_margin,
+      "sale_price": formData.value.sale_price,
+      "vat": formData.value.vat,
+      "total_sale_price": formData.value.total_sale_price,
+      "image": formData.value.image,
+      "stock": formData.value.stock,
     }
 
     await useApi("product/" + id, "PUT", dataUpdated)
@@ -474,6 +598,18 @@ const deleteProduct = async (user) => {
     }
   }
 }
+
+const computedSalePrice = computed(() => {
+  const purchasePrice = parseFloat(formData.value.purchase_price) || 0;
+  const profitMargin = parseFloat(formData.value.profit_margin) || 0;
+  return purchasePrice + (purchasePrice * profitMargin / 100);
+});
+
+const computedTotalSalePrice = computed(() => {
+  const salePrice = computedSalePrice.value;
+  const vat = parseFloat(formData.value.vat) || 0;
+  return salePrice + (salePrice * vat / 100);
+});
 
 </script>
 
